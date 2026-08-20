@@ -1,4 +1,7 @@
-// prisma/schema.prisma
+// ============================================
+// 1. 数据源和生成器
+// ============================================
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,19 +11,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================
+// 2. 枚举定义
+// ============================================
+
 enum UserRole {
   USER
   TENANT_ADMIN
   BRANCH_ADMIN
   PLATFORM_ADMIN
-}
-
-enum TenantType {
-  MERCHANT
-  ASSOCIATION
-  FELLOWSHIP
-  ALUMNI
-  OTHER
 }
 
 enum BranchType {
@@ -40,6 +39,25 @@ enum BranchStatus {
   EXPIRED
 }
 
+enum TenantType {
+  MERCHANT
+  ASSOCIATION
+  FELLOWSHIP
+  ALUMNI
+  OTHER
+}
+
+enum RatingTargetType {
+  POST
+  ACTIVITY
+  TENANT
+  USER
+}
+
+// ============================================
+// 3. 用户模块
+// ============================================
+
 model User {
   id              String       @id @default(cuid())
   email           String       @unique
@@ -49,17 +67,32 @@ model User {
   avatar          String?
   role            UserRole     @default(USER)
   verified        Boolean      @default(false)
+  isSupervisor    Boolean      @default(false)
+  points          Int          @default(0)
+  reportCount     Int          @default(0)
+  blocked         Boolean      @default(false)
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
-  tenants         TenantStaff[]
-  branchApplications BranchApplication[]
-  branchStaff     BranchStaff[]
-  activities      Activity[]
-  ratings         Rating[]
-  follows         Follow[]
-  posts           Post[]
+  // 关系
+  tenants              TenantStaff[]
+  tenantMembers        TenantMember[]
+  branchApplications   BranchApplication[]
+  approvedBranchApplications BranchApplication[] @relation("BranchApprover")
+  branchStaff          BranchStaff[]
+  activities           Activity[]
+  ratings              Rating[]
+  posts                Post[]
+  following            Follow[]     @relation("Follower")
+  followers            Follow[]     @relation("Followee")
+  sentReports          Report[]     @relation("Reporter")
+  auditLogs            AuditLog[]   @relation("Auditor")
+  activitySignups      ActivitySignup[]
 }
+
+// ============================================
+// 4. 租户模块
+// ============================================
 
 model Tenant {
   id              String       @id @default(cuid())
@@ -91,7 +124,7 @@ model TenantStaff {
   role            String       @default("PUBLISHER")
   createdAt       DateTime     @default(now())
 
-  tenant          Tenant       @relation(fields: [tenantId], references: [id])
+  tenant          Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   user            User         @relation(fields: [userId], references: [id])
 
   @@unique([tenantId, userId])
@@ -105,11 +138,15 @@ model TenantMember {
   joinedAt        DateTime     @default(now())
   leftAt          DateTime?
 
-  tenant          Tenant       @relation(fields: [tenantId], references: [id])
+  tenant          Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   user            User         @relation(fields: [userId], references: [id])
 
   @@unique([tenantId, userId])
 }
+
+// ============================================
+// 5. 分会模块
+// ============================================
 
 model BranchApplication {
   id              String       @id @default(cuid())
@@ -155,11 +192,15 @@ model BranchStaff {
   role            String       @default("PRESIDENT")
   createdAt       DateTime     @default(now())
 
-  branch          Branch       @relation(fields: [branchId], references: [id])
+  branch          Branch       @relation(fields: [branchId], references: [id], onDelete: Cascade)
   user            User         @relation(fields: [userId], references: [id])
 
   @@unique([branchId, userId])
 }
+
+// ============================================
+// 6. 活动模块
+// ============================================
 
 model Activity {
   id              String       @id @default(cuid())
@@ -177,7 +218,8 @@ model Activity {
 
   tenantId        String?
   userId          String
-  tenant          Tenant?      @relation(fields: [tenantId], references: [id])
+
+  tenant          Tenant?      @relation(fields: [tenantId], references: [id], onDelete: SetNull)
   user            User         @relation(fields: [userId], references: [id])
 
   signups         ActivitySignup[]
@@ -193,9 +235,13 @@ model ActivitySignup {
   signupCode      String       @unique
   createdAt       DateTime     @default(now())
 
-  activity        Activity     @relation(fields: [activityId], references: [id])
+  activity        Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
   user            User?        @relation(fields: [userId], references: [id])
 }
+
+// ============================================
+// 7. 资讯模块
+// ============================================
 
 model Post {
   id              String       @id @default(cuid())
@@ -214,23 +260,32 @@ model Post {
   tenantId        String?
 
   user            User         @relation(fields: [userId], references: [id])
-  tenant          Tenant?      @relation(fields: [tenantId], references: [id])
-
-  ratings         Rating[]
+  tenant          Tenant?      @relation(fields: [tenantId], references: [id], onDelete: SetNull)
 }
+
+// ============================================
+// 8. 评价模块
+// ============================================
 
 model Rating {
   id              String       @id @default(cuid())
-  score           Int
+  score           Int          @default(5)
   targetId        String
-  targetType      String
+  targetType      RatingTargetType
   userId          String
+  comment         String?      @db.Text
   createdAt       DateTime     @default(now())
 
   user            User         @relation(fields: [userId], references: [id])
 
   @@unique([userId, targetId, targetType])
+  @@index([targetId, targetType])
+  @@index([targetType])
 }
+
+// ============================================
+// 9. 关注模块
+// ============================================
 
 model Follow {
   id              String       @id @default(cuid())
@@ -244,6 +299,39 @@ model Follow {
 
   @@unique([followerId, followeeId, followeeType])
 }
+
+// ============================================
+// 10. 举报与审计模块
+// ============================================
+
+model Report {
+  id              String       @id @default(cuid())
+  reporterId      String
+  targetId        String
+  targetType      String
+  reason          String
+  status          String       @default("PENDING")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  reporter        User         @relation("Reporter", fields: [reporterId], references: [id])
+}
+
+model AuditLog {
+  id              String       @id @default(cuid())
+  adminId         String
+  action          String
+  targetType      String
+  targetId        String
+  details         String?      @db.Text
+  createdAt       DateTime     @default(now())
+
+  admin           User         @relation("Auditor", fields: [adminId], references: [id])
+}
+
+// ============================================
+// 11. 静态数据表
+// ============================================
 
 model Community {
   code            String       @id
