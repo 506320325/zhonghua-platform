@@ -1,13 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // 跳过 TypeScript 检查
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: true,   // ← 必须加上！
   },
-  // 跳过 ESLint 检查
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: true,  // ← 必须加上！
   },
   experimental: {
     optimizePackageImports: ['@prisma/client'],
