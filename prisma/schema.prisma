@@ -1,0 +1,276 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  TENANT_ADMIN
+  BRANCH_ADMIN
+  PLATFORM_ADMIN
+}
+
+enum TenantType {
+  MERCHANT
+  ASSOCIATION
+  FELLOWSHIP
+  ALUMNI
+  OTHER
+}
+
+enum BranchType {
+  MEDIATION
+  LEGAL
+  CHARITY
+  COMMUNITY
+  PROFESSIONAL
+  SUPPLY_CHAIN
+  CUSTOM
+}
+
+enum BranchStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+model User {
+  id              String       @id @default(cuid())
+  email           String       @unique
+  phone           String?      @unique
+  password        String
+  nickname        String?
+  avatar          String?
+  role            UserRole     @default(USER)
+  verified        Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  tenants         TenantStaff[]
+  branchApplications BranchApplication[]
+  branchStaff     BranchStaff[]
+  activities      Activity[]
+  ratings         Rating[]
+  follows         Follow[]
+  posts           Post[]
+}
+
+model Tenant {
+  id              String       @id @default(cuid())
+  name            String
+  logo            String?
+  description     String?
+  category        String
+  communityCode   String
+  adCode          String
+  address         String?
+  phone           String?
+  email           String?
+  website         String?
+  verified        Boolean      @default(false)
+  status          String       @default("PENDING")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  staff           TenantStaff[]
+  activities      Activity[]
+  posts           Post[]
+  members         TenantMember[]
+}
+
+model TenantStaff {
+  id              String       @id @default(cuid())
+  tenantId        String
+  userId          String
+  role            String       @default("PUBLISHER")
+  createdAt       DateTime     @default(now())
+
+  tenant          Tenant       @relation(fields: [tenantId], references: [id])
+  user            User         @relation(fields: [userId], references: [id])
+
+  @@unique([tenantId, userId])
+}
+
+model TenantMember {
+  id              String       @id @default(cuid())
+  tenantId        String
+  userId          String
+  status          String       @default("ACTIVE")
+  joinedAt        DateTime     @default(now())
+  leftAt          DateTime?
+
+  tenant          Tenant       @relation(fields: [tenantId], references: [id])
+  user            User         @relation(fields: [userId], references: [id])
+
+  @@unique([tenantId, userId])
+}
+
+model BranchApplication {
+  id              String       @id @default(cuid())
+  userId          String
+  branchType      BranchType
+  name            String
+  description     String?
+  communityCode   String
+  category        String?
+  termStart       DateTime
+  termEnd         DateTime
+  status          BranchStatus @default(PENDING)
+  approvedBy      String?
+  approvedAt      DateTime?
+  feedback        String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  user            User         @relation(fields: [userId], references: [id])
+  approvedUser    User?        @relation("BranchApprover", fields: [approvedBy], references: [id])
+}
+
+model Branch {
+  id              String       @id @default(cuid())
+  name            String
+  branchType      BranchType
+  communityCode   String
+  category        String?
+  description     String?
+  termStart       DateTime
+  termEnd         DateTime
+  status          String       @default("ACTIVE")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  staff           BranchStaff[]
+}
+
+model BranchStaff {
+  id              String       @id @default(cuid())
+  branchId        String
+  userId          String
+  role            String       @default("PRESIDENT")
+  createdAt       DateTime     @default(now())
+
+  branch          Branch       @relation(fields: [branchId], references: [id])
+  user            User         @relation(fields: [userId], references: [id])
+
+  @@unique([branchId, userId])
+}
+
+model Activity {
+  id              String       @id @default(cuid())
+  title           String
+  description     String?
+  location        String
+  communityCode   String
+  startTime       DateTime
+  endTime         DateTime
+  maxParticipants Int?
+  currentCount    Int          @default(0)
+  status          String       @default("DRAFT")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  tenantId        String?
+  userId          String
+  tenant          Tenant?      @relation(fields: [tenantId], references: [id])
+  user            User         @relation(fields: [userId], references: [id])
+
+  signups         ActivitySignup[]
+}
+
+model ActivitySignup {
+  id              String       @id @default(cuid())
+  activityId      String
+  userId          String?
+  name            String
+  phone           String
+  status          String       @default("REGISTERED")
+  signupCode      String       @unique
+  createdAt       DateTime     @default(now())
+
+  activity        Activity     @relation(fields: [activityId], references: [id])
+  user            User?        @relation(fields: [userId], references: [id])
+}
+
+model Post {
+  id              String       @id @default(cuid())
+  title           String
+  content         String?
+  category        String
+  communityCode   String
+  images          String?
+  status          String       @default("PUBLISHED")
+  viewCount       Int          @default(0)
+  likeCount       Int          @default(0)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  userId          String
+  tenantId        String?
+
+  user            User         @relation(fields: [userId], references: [id])
+  tenant          Tenant?      @relation(fields: [tenantId], references: [id])
+
+  ratings         Rating[]
+}
+
+model Rating {
+  id              String       @id @default(cuid())
+  score           Int
+  targetId        String
+  targetType      String
+  userId          String
+  createdAt       DateTime     @default(now())
+
+  user            User         @relation(fields: [userId], references: [id])
+
+  @@unique([userId, targetId, targetType])
+}
+
+model Follow {
+  id              String       @id @default(cuid())
+  followerId      String
+  followeeId      String
+  followeeType    String
+  createdAt       DateTime     @default(now())
+
+  follower        User         @relation("Follower", fields: [followerId], references: [id])
+  followeeUser    User?        @relation("Followee", fields: [followeeId], references: [id])
+
+  @@unique([followerId, followeeId, followeeType])
+}
+
+model Community {
+  code            String       @id
+  name            String
+  districtCode    String
+  districtName    String
+  regionCode      String
+  regionName      String
+  createdAt       DateTime     @default(now())
+}
+
+model Category {
+  code            String       @id
+  name            String
+  parentCode      String?
+  level           Int          @default(1)
+  createdAt       DateTime     @default(now())
+}
+
+model BranchTypeConfig {
+  id              String       @id @default(cuid())
+  type            BranchType   @unique
+  label           String
+  description     String?
+  enabled         Boolean      @default(true)
+  requireCategory  Boolean     @default(false)
+  requireCommunity Boolean     @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
