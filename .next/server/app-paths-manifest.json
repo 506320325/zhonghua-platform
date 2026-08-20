@@ -1,13 +1,1 @@
-{
-  "/page": "app/page.js",
-  "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/tenant/register/page": "app/tenant/register/page.js",
-  "/auth/register/page": "app/auth/register/page.js",
-  "/auth/login/page": "app/auth/login/page.js",
-  "/user/page": "app/user/page.js",
-  "/branch/apply/page": "app/branch/apply/page.js",
-  "/tenant/dashboard/page": "app/tenant/dashboard/page.js",
-  "/branch/dashboard/page": "app/branch/dashboard/page.js",
-  "/admin/branches/page": "app/admin/branches/page.js"
-}
+{}
