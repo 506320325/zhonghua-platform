@@ -1,5 +1,5 @@
 // prisma/seed.ts
-import { PrismaClient, BranchType } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -154,12 +154,12 @@ async function main() {
 
   // 3. 预置分会类型配置
   const branchTypes = [
-    { type: BranchType.MEDIATION, label: '調解分會', description: '處理社區糾紛調解', requireCategory: false },
-    { type: BranchType.LEGAL, label: '法律服務分會', description: '提供法律諮詢與援助', requireCategory: false },
-    { type: BranchType.CHARITY, label: '慈善分會', description: '組織慈善活動與物資捐贈', requireCategory: false },
-    { type: BranchType.COMMUNITY, label: '社區分會', description: '服務特定社區居民', requireCategory: false },
-    { type: BranchType.PROFESSIONAL, label: '專業分會', description: '行業專業人士聯合會', requireCategory: true },
-    { type: BranchType.SUPPLY_CHAIN, label: '供應鏈分會', description: '供應鏈與貿易合作', requireCategory: false },
+    { type: MEDIATION, label: '調解分會', description: '處理社區糾紛調解', requireCategory: false },
+    { type: LEGAL, label: '法律服務分會', description: '提供法律諮詢與援助', requireCategory: false },
+    { type: CHARITY, label: '慈善分會', description: '組織慈善活動與物資捐贈', requireCategory: false },
+    { type: COMMUNITY, label: '社區分會', description: '服務特定社區居民', requireCategory: false },
+    { type: PROFESSIONAL, label: '專業分會', description: '行業專業人士聯合會', requireCategory: true },
+    { type: SUPPLY_CHAIN, label: '供應鏈分會', description: '供應鏈與貿易合作', requireCategory: false },
   ]
 
   for (const bt of branchTypes) {
