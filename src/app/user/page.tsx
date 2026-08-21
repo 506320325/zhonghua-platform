@@ -84,6 +84,13 @@ export default function UserPage() {
           </div>
         </Link>
 
+        <Link href="/tenant/register" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
+          <div className="flex items-center justify-between">
+            <span>🏪 入駐申請</span>
+            <span className="text-gray-400 text-sm">開通服務號</span>
+          </div>
+        </Link>
+        
         <Link href="/user/activities" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
           <div className="flex items-center justify-between">
             <span>📋 我的活動</span>

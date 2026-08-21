@@ -1,11 +1,39 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+
+const tenantTypes = [
+  { value: 'MERCHANT', label: '商戶' },
+  { value: 'ASSOCIATION', label: '社團/協會' },
+  { value: 'FELLOWSHIP', label: '聯誼會' },
+  { value: 'ALUMNI', label: '校友會' },
+  { value: 'OTHER', label: '其他' },
+]
+
+const categories = [
+  '資訊服務', '物品交易', '商業服務', '社區服務',
+  '教育服務', '醫療健康', '預約服務', '娛樂休閒',
+  '房產與交通', '其他',
+]
+
+const communities = [
+  '中環', '上環', '西環', '銅鑼灣', '灣仔', '跑馬地',
+  '筲箕灣', '西灣河', '太古', '北角', '天后',
+  '尖沙咀', '旺角', '油麻地', '佐敦', '深水埗',
+  '九龍城', '黃大仙', '觀塘', '藍田', '將軍澳',
+  '沙田', '火炭', '馬鞍山', '烏溪沙', '大圍',
+  '大埔', '粉嶺', '上水', '屯門', '元朗', '荃灣',
+]
 
 export default function TenantRegisterPage() {
-  const [step, setStep] = useState(1)
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     name: '',
+    type: '',
     category: '',
     communityCode: '',
     phone: '',
@@ -13,119 +41,167 @@ export default function TenantRegisterPage() {
     description: '',
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    alert('租戶入駐申請已提交（模擬）')
+    setError('')
+    setLoading(true)
+
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        setError('請先登入')
+        router.push('/auth/login')
+        return
+      }
+
+      const res = await fetch('/api/tenant/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || '入駐申請失敗')
+        return
+      }
+      alert('入駐申請已提交，請等待審核')
+      router.push('/')
+    } catch (err) {
+      setError('網絡錯誤，請重試')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-warm px-4 py-6 pb-24">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold text-primary mb-2">租戶入駐</h1>
-        <p className="text-gray-500 text-sm mb-6">選擇行業分類和社區，立即開通服務號</p>
+    <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
+      <h1 className="text-2xl font-bold text-primary mb-2">租戶入駐</h1>
+      <p className="text-gray-500 text-sm mb-6">填寫資料，申請開通服務號</p>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 shadow-sm space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">服務號名稱 *</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
-              placeholder="如：火炭社區商會"
-              required
-            />
-          </div>
+      {error && (
+        <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-4">
+          {error}
+        </div>
+      )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">行業分類 *</label>
-            <select
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
-              required
-            >
-              <option value="">請選擇行業</option>
-              <option value="info">資訊服務</option>
-              <option value="trade">物品交易</option>
-              <option value="biz">商業服務</option>
-              <option value="community">社區服務</option>
-              <option value="edu">教育服務</option>
-              <option value="health">醫療健康</option>
-              <option value="booking">預約服務</option>
-              <option value="entertainment">娛樂休閒</option>
-              <option value="property">房產與交通</option>
-              <option value="others">其他</option>
-            </select>
-          </div>
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 shadow-sm space-y-5">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">服務號名稱 *</label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="如：火炭社區商會"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+            required
+          />
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">所在社區 *</label>
-            <select
-              value={formData.communityCode}
-              onChange={(e) => setFormData({ ...formData, communityCode: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
-              required
-            >
-              <option value="">請選擇社區</option>
-              <option value="81010101">中環</option>
-              <option value="81010108">西環</option>
-              <option value="81010204">銅鑼灣</option>
-              <option value="81010306">筲箕灣</option>
-              <option value="81010323">火炭</option>
-              <option value="81030301">沙田市中心</option>
-              <option value="81030323">火炭</option>
-              <option value="81030329">烏溪沙</option>
-              <option value="81030334">恆安</option>
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">電話</label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
-                placeholder="+852"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">電郵</label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
-                placeholder="contact@example.com"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">服務描述</label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none resize-none"
-              rows={3}
-              placeholder="介紹您的服務或組織..."
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-primary text-white py-3 rounded-xl font-medium hover:bg-primary-dark transition"
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">服務號類型 *</label>
+          <select
+            name="type"
+            value={formData.type}
+            onChange={handleChange}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+            required
           >
-            提交入駐申請
-          </button>
-        </form>
+            <option value="">請選擇類型</option>
+            {tenantTypes.map(t => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+        </div>
 
-        <p className="text-center text-xs text-gray-400 mt-4">
-          提交後將由平台審核，審核通過後即可開通服務號
-        </p>
-      </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">行業分類 *</label>
+          <select
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+            required
+          >
+            <option value="">請選擇行業</option>
+            {categories.map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">所在社區 *</label>
+          <select
+            name="communityCode"
+            value={formData.communityCode}
+            onChange={handleChange}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+            required
+          >
+            <option value="">請選擇社區</option>
+            {communities.map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">電話</label>
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="+852"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">電郵</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="contact@example.com"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">服務描述</label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            rows={4}
+            placeholder="介紹您的服務或組織..."
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none resize-none"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-primary text-white py-3 rounded-xl font-medium hover:bg-primary-dark transition disabled:opacity-50"
+        >
+          {loading ? '提交中...' : '提交入駐申請'}
+        </button>
+      </form>
+
+      <p className="text-center text-xs text-gray-400 mt-4">
+        提交後將由平台審核，審核通過後即可開通服務號
+      </p>
     </div>
   )
 }
