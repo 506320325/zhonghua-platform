@@ -39,6 +39,12 @@ enum BranchStatus {
   EXPIRED
 }
 
+enum PageStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum TenantType {
   MERCHANT
   ASSOCIATION
@@ -77,6 +83,8 @@ model User {
   // 关系
   tenants              TenantStaff[]
   tenantMembers        TenantMember[]
+  pages                Page[]         @relation("PageCreator")
+  pageStaff            PageStaff[]
   branchApplications   BranchApplication[]
   approvedBranchApplications BranchApplication[] @relation("BranchApprover")
   branchStaff          BranchStaff[]
@@ -145,7 +153,47 @@ model TenantMember {
 }
 
 // ============================================
-// 5. 分会模块
+// 5. 主页模块
+// ============================================
+
+model Page {
+  id              String       @id @default(cuid())
+  slug            String       @unique
+  name            String
+  orgType         String
+  certType        String?
+  category        String
+  communityCode   String
+  phone           String?
+  email           String?
+  description     String?      @db.Text
+  certNumber      String?
+  parentOrg       String?
+  declaration     String?      @db.Text
+  status          PageStatus   @default(PENDING)
+  createdById     String
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  creator         User         @relation("PageCreator", fields: [createdById], references: [id])
+  staff           PageStaff[]
+}
+
+model PageStaff {
+  id              String       @id @default(cuid())
+  pageId          String
+  userId          String
+  role            String       @default("OWNER")
+  createdAt       DateTime     @default(now())
+
+  page            Page         @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [userId], references: [id])
+
+  @@unique([pageId, userId])
+}
+
+// ============================================
+// 6. 分会模块
 // ============================================
 
 model BranchApplication {

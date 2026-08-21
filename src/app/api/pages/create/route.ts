@@ -1,7 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
-import jwt from 'jsonwebtoken'
+import { prisma } from '@/lib/prisma'
+import { verifyToken } from '@/lib/auth'
 
-const JWT_SECRET = 'zhonghua-platform-secret-key-2026'
+function createBaseSlug(name: string): string {
+  const base = name
+    .trim()
+    .toLowerCase()
+    .replace(/['’]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+  if (base) return base
+  return `page-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+async function generateUniqueSlug(name: string): Promise<string> {
+  const base = createBaseSlug(name)
+  let slug = base
+  let i = 1
+
+  while (await prisma.page.findUnique({ where: { slug } })) {
+    slug = `${base}-${i}`
+    i += 1
+  }
+
+  return slug
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,21 +35,68 @@ export async function POST(req: NextRequest) {
     }
 
     const token = authHeader.split(' ')[1]
-    let userId: string
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string }
-      userId = decoded.userId
-    } catch {
+    const decoded = verifyToken(token)
+    if (!decoded) {
       return NextResponse.json({ error: '無效的 token' }, { status: 401 })
     }
 
     const body = await req.json()
-    // 暂时只做模拟响应
-    console.log('建立主頁請求:', { userId, ...body })
+    const {
+      name,
+      orgType,
+      certType,
+      category,
+      communityCode,
+      phone,
+      email,
+      description,
+      certNumber,
+      parentOrg,
+      declaration,
+    } = body
+
+    if (!name || !orgType || !certType || !category || !communityCode) {
+      return NextResponse.json({ error: '請填寫完整資料' }, { status: 400 })
+    }
+
+    const slug = await generateUniqueSlug(String(name))
+
+    const page = await prisma.$transaction(async (tx) => {
+      const created = await tx.page.create({
+        data: {
+          slug,
+          name: String(name).trim(),
+          orgType: String(orgType),
+          certType: String(certType),
+          category: String(category),
+          communityCode: String(communityCode),
+          phone: phone ? String(phone) : null,
+          email: email ? String(email) : null,
+          description: description ? String(description) : null,
+          certNumber: certNumber ? String(certNumber) : null,
+          parentOrg: parentOrg ? String(parentOrg) : null,
+          declaration: declaration ? String(declaration) : null,
+          status: 'PENDING',
+          createdById: decoded.userId,
+        },
+      })
+
+      await tx.pageStaff.create({
+        data: {
+          pageId: created.id,
+          userId: decoded.userId,
+          role: 'OWNER',
+        },
+      })
+
+      return created
+    })
 
     return NextResponse.json({
       message: '主頁申請已提交',
-      pageId: 'mock-page-id',
+      pageId: page.id,
+      slug: page.slug,
+      status: page.status,
     }, { status: 201 })
   } catch (error) {
     console.error('建立主頁錯誤:', error)
