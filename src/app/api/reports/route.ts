@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
         reporterId: decoded.userId,
         targetId: String(targetId),
         targetType: 'POST',
+        communityBranchId: post.branchId || null,
         reason: String(reason),
         status: 'PENDING',
       },
@@ -83,3 +84,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '提交失敗，請重試' }, { status: 500 })
   }
 }
+

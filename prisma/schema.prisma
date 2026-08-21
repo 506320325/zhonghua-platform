@@ -27,6 +27,7 @@ enum BranchType {
   LEGAL
   CHARITY
   COMMUNITY
+  COMMUNITY_LIFE
   PROFESSIONAL
   SUPPLY_CHAIN
   CUSTOM
@@ -95,6 +96,7 @@ model User {
   following            Follow[]     @relation("Follower")
   followers            Follow[]     @relation("Followee")
   sentReports          Report[]     @relation("Reporter")
+  handledReports     Report[]     @relation("ReportHandler")
   auditLogs            AuditLog[]   @relation("Auditor")
   notifications        Notification[]
   activitySignups      ActivitySignup[]
@@ -228,6 +230,10 @@ model Branch {
   communityCode   String
   category        String?
   description     String?
+  isExclusive      Boolean      @default(false)
+  scope            String?
+  canAllResidentsJoin Boolean @default(false)
+  councillorWeighted Boolean @default(false)
   termStart       DateTime
   termEnd         DateTime
   status          String       @default("PENDING")
@@ -259,6 +265,10 @@ model Activity {
   id              String       @id @default(cuid())
   title           String
   description     String?
+  isExclusive      Boolean      @default(false)
+  scope            String?
+  canAllResidentsJoin Boolean @default(false)
+  councillorWeighted Boolean @default(false)
   location        String
   communityCode   String
   startTime       DateTime
@@ -364,16 +374,21 @@ model Follow {
 // ============================================
 
 model Report {
-  id              String       @id @default(cuid())
-  reporterId      String
-  targetId        String
-  targetType      String
-  reason          String
-  status          String       @default("PENDING")
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id                String       @id @default(cuid())
+  reporterId        String
+  targetId          String
+  targetType        String
+  reason            String
+  status            String       @default("PENDING")
+  resolution        String?
+  handlerId         String?
+  handlerRole       String?
+  communityBranchId String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
-  reporter        User         @relation("Reporter", fields: [reporterId], references: [id])
+  reporter User  @relation("Reporter", fields: [reporterId], references: [id])
+  handler  User? @relation("ReportHandler", fields: [handlerId], references: [id])
 }
 
 model Notification {
@@ -427,6 +442,10 @@ model BranchTypeConfig {
   type            BranchType   @unique
   label           String
   description     String?
+  isExclusive      Boolean      @default(false)
+  scope            String?
+  canAllResidentsJoin Boolean @default(false)
+  councillorWeighted Boolean @default(false)
   enabled         Boolean      @default(true)
   requireCategory  Boolean     @default(false)
   requireCommunity Boolean     @default(true)

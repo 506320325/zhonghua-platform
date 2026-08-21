@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import JoinBranchButton from '@/components/JoinBranchButton'
 
 function formatDate(date: Date | string): string {
   const d = new Date(date)
@@ -126,7 +127,7 @@ export default async function PublicBranchPage({
             📢 分會活動即將推出
           </div>
           <div className="bg-warm rounded-xl p-4 text-sm text-gray-500">
-            👥 加入分會入口即將推出
+          <JoinBranchButton branchId={branch.id} />
           </div>
         </div>
       </div>

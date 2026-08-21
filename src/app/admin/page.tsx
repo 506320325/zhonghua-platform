@@ -142,6 +142,30 @@ export default function AdminPage() {
     }
   }
 
+  const handleReportAction = async (reportId: string, action: 'valid' | 'invalid') => {
+    const token = localStorage.getItem('token')
+    if (!token) return
+    const resolution = prompt(action === 'valid' ? '填寫處理說明（可選）' : '填寫判定說明（可選）') || ''
+    try {
+      const res = await fetch('/api/admin/reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ id: reportId, action, resolution }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setReports((prev) => prev.map((r) => r.id === reportId ? { ...r, status: action === 'valid' ? 'VALID' : 'INVALID' } : r))
+      } else {
+        alert(data.error || '操作失敗')
+      }
+    } catch {
+      alert('網絡錯誤，請重試')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-warm px-4 py-6 pb-24">
       <div className="max-w-3xl mx-auto">
@@ -171,6 +195,10 @@ export default function AdminPage() {
                   </div>
                   <p className="text-gray-500 mt-1">原因：{r.reason}</p>
                   <p className="text-xs text-gray-400 mt-1">投訴人：{r.reporter} · {new Date(r.createdAt).toLocaleString('zh-HK')}</p>
+                  <div className="flex gap-2 mt-2">
+                    <button onClick={() => handleReportAction(r.id, 'valid')} className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full hover:bg-primary/20">確認有效</button>
+                    <button onClick={() => handleReportAction(r.id, 'invalid')} className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full hover:bg-gray-200">判定無效</button>
+                  </div>
                 </div>
               ))}
             </div>

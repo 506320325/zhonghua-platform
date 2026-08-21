@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import PwaInstallBanner from '@/components/PwaInstallBanner'
 import './globals.css'
 
@@ -12,6 +13,21 @@ export default function RootLayout({
 }) {
   const pathname = usePathname()
   const router = useRouter()
+
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token) return
+    fetch('/api/notifications/unread-count', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+    })
+      .then((r) => r.json())
+      .then((d) => setUnreadCount(d.unreadCount || 0))
+      .catch(() => {})
+  }, [])
 
   // 判断是否显示返回按钮（首页不显示）
   const showBack = pathname !== '/'
@@ -88,7 +104,7 @@ export default function RootLayout({
               <Link
                 key={item.path}
                 href={item.path}
-                className={`flex flex-col items-center py-1 px-3 text-xs rounded-lg transition ${
+                className={`relative flex flex-col items-center py-1 px-3 text-xs rounded-lg transition ${
                   active
                     ? 'text-primary font-medium'
                     : 'text-gray-400 hover:text-gray-600'
@@ -96,6 +112,11 @@ export default function RootLayout({
               >
                 <span className="text-lg leading-none">{item.label.split(' ')[0]}</span>
                 <span className="mt-0.5">{item.label.split(' ')[1] || '首頁'}</span>
+                {item.path === '/user' && unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </Link>
             )
           })}
