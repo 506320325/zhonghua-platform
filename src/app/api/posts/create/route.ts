@@ -6,6 +6,7 @@ const MAX_TEXT_LENGTH = 300
 const MAX_IMAGES = 3
 const MAX_IMAGE_BYTES = 1024 * 1024
 const MAX_VIDEO_DURATION_SECONDS = 15
+const MAX_DAILY_POSTS = 3
 
 function estimateBase64Bytes(dataUrl: string): number {
   const base64 = dataUrl.split(',')[1] || ''
@@ -30,6 +31,18 @@ export async function POST(req: NextRequest) {
     })
     if (!user) {
       return NextResponse.json({ error: '用戶不存在' }, { status: 404 })
+    }
+
+    const startOfDay = new Date()
+    startOfDay.setHours(0, 0, 0, 0)
+    const todayPostCount = await prisma.post.count({
+      where: {
+        userId: decoded.userId,
+        createdAt: { gte: startOfDay },
+      },
+    })
+    if (todayPostCount >= MAX_DAILY_POSTS) {
+      return NextResponse.json({ error: `每人每天最多發布 ${MAX_DAILY_POSTS} 篇` }, { status: 429 })
     }
 
     const body = await req.json()

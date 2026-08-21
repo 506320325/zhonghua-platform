@@ -25,35 +25,24 @@ export default function MessagesPage() {
       return
     }
 
-    // 模拟消息数据（后续替换为真实API）
-    const mockMessages: Message[] = [
-      {
-        id: '1',
-        title: '歡迎加入中華促進會',
-        content: '感謝您註冊中華促進會平台，您現在可以瀏覽活動、預約服務和申請分會了。',
-        type: 'system',
-        isRead: false,
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: '2',
-        title: '新活動通知',
-        content: '火炭社區街市改造完成，將於本週六舉辦開放日活動，歡迎報名參加。',
-        type: 'tenant',
-        isRead: false,
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: '3',
-        title: '系統維護通知',
-        content: '平台將於2026年8月25日凌晨2:00-4:00進行系統維護，屆時可能無法訪問。',
-        type: 'system',
-        isRead: true,
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
-      },
-    ]
-    setMessages(mockMessages)
-    setLoading(false)
+    const load = async () => {
+      try {
+        const res = await fetch('/api/notifications', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+        })
+        const data = await res.json()
+        if (res.ok) {
+          setMessages(data.data || [])
+        }
+      } catch {
+        setMessages([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
   }, [router])
 
   const markAsRead = (id: string) => {

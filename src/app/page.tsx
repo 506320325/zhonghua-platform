@@ -36,6 +36,39 @@ export default function HomePage() {
     load()
   }, [])
 
+  const handleReport = async (postId: string) => {
+    const reason = prompt('請輸入投訴原因')
+    if (!reason) return
+    const token = localStorage.getItem('token')
+    if (!token) {
+      alert('請先登入')
+      return
+    }
+    try {
+      const res = await fetch('/api/reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          targetId: postId,
+          targetType: 'POST',
+          reason,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.error || '投訴失敗')
+        return
+      }
+      alert(data.message || '投訴已提交')
+      setPosts((prev) => prev.filter((p) => p.id !== postId))
+    } catch {
+      alert('網絡錯誤，請重試')
+    }
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-6 pt-2">
@@ -94,6 +127,13 @@ export default function HomePage() {
                 <span>{post.author}</span>
                 <span>{new Date(post.createdAt).toLocaleDateString('zh-HK')}</span>
               </div>
+
+              <button
+                onClick={() => handleReport(post.id)}
+                className="text-xs text-red-400 hover:text-red-600 mt-2"
+              >
+                投訴
+              </button>
             </div>
           ))
         )}

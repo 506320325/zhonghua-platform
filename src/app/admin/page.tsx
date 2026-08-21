@@ -24,6 +24,8 @@ export default function AdminPage() {
   const [actionId, setActionId] = useState('')
   const [videoEmail, setVideoEmail] = useState('')
   const [videoMsg, setVideoMsg] = useState('')
+  const [reports, setReports] = useState<any[]>([])
+  const [reportsLoading, setReportsLoading] = useState(false)
 
   const load = async () => {
     const token = localStorage.getItem('token')
@@ -53,8 +55,26 @@ export default function AdminPage() {
     }
   }
 
+  const loadReports = async () => {
+    const token = localStorage.getItem('token')
+    if (!token) return
+    setReportsLoading(true)
+    try {
+      const res = await fetch('/api/admin/reports', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (res.ok) setReports(data.data || [])
+    } catch {
+      setReports([])
+    } finally {
+      setReportsLoading(false)
+    }
+  }
+
   useEffect(() => {
     load()
+    loadReports()
   }, [])
 
   const handleAction = async (item: Application, action: 'approve' | 'reject') => {
@@ -133,6 +153,28 @@ export default function AdminPage() {
           >
             刷新
           </button>
+        </div>
+
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-6">
+          <h2 className="font-semibold text-gray-800 mb-3">投訴記錄</h2>
+          {reportsLoading ? (
+            <p className="text-sm text-gray-400">載入中...</p>
+          ) : reports.length === 0 ? (
+            <p className="text-sm text-gray-400">暫無投訴記錄</p>
+          ) : (
+            <div className="space-y-3">
+              {reports.map((r) => (
+                <div key={r.id} className="text-sm border border-gray-100 rounded-xl p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-700 font-medium">投訴內容：{r.targetId}</span>
+                    <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">{r.status}</span>
+                  </div>
+                  <p className="text-gray-500 mt-1">原因：{r.reason}</p>
+                  <p className="text-xs text-gray-400 mt-1">投訴人：{r.reporter} · {new Date(r.createdAt).toLocaleString('zh-HK')}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <p className="text-gray-500 text-sm mb-6">管理所有主頁與分會申請</p>
 

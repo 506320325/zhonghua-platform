@@ -96,6 +96,7 @@ model User {
   followers            Follow[]     @relation("Followee")
   sentReports          Report[]     @relation("Reporter")
   auditLogs            AuditLog[]   @relation("Auditor")
+  notifications        Notification[]
   activitySignups      ActivitySignup[]
 }
 
@@ -373,6 +374,18 @@ model Report {
   updatedAt       DateTime     @updatedAt
 
   reporter        User         @relation("Reporter", fields: [reporterId], references: [id])
+}
+
+model Notification {
+  id              String       @id @default(cuid())
+  userId          String
+  title           String
+  content         String?
+  type            String       @default("SYSTEM")
+  isRead          Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model AuditLog {
