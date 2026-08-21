@@ -1,16 +1,42 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function RegisterPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
+  const [nickname, setNickname] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    alert('註冊功能將連接後端 API（模擬）')
+    setError('')
+    setLoading(true)
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, phone, password, nickname }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || '注册失败')
+        return
+      }
+      // 注册成功，跳转到登录页
+      alert('注册成功！请登录')
+      router.push('/auth/login')
+    } catch (err) {
+      setError('网络错误，请重试')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -21,6 +47,12 @@ export default function RegisterPage() {
           <p className="text-gray-500 text-sm mt-1">註冊新帳戶</p>
         </div>
 
+        {error && (
+          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-4">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">電郵地址</label>
@@ -30,7 +62,6 @@ export default function RegisterPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
               placeholder="your@email.com"
-              required
             />
           </div>
           <div>
@@ -41,6 +72,16 @@ export default function RegisterPage() {
               onChange={(e) => setPhone(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
               placeholder="+852 9123 4567"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">暱稱</label>
+            <input
+              type="text"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+              placeholder="您的暱稱"
             />
           </div>
           <div>
@@ -56,9 +97,10 @@ export default function RegisterPage() {
           </div>
           <button
             type="submit"
-            className="w-full bg-primary text-white py-3 rounded-xl font-medium hover:bg-primary-dark transition"
+            disabled={loading}
+            className="w-full bg-primary text-white py-3 rounded-xl font-medium hover:bg-primary-dark transition disabled:opacity-50"
           >
-            註冊
+            {loading ? '註冊中...' : '註冊'}
           </button>
         </form>
 
