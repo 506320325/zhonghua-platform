@@ -9,7 +9,6 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
-  const [nickname, setNickname] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -18,11 +17,18 @@ export default function RegisterPage() {
     setError('')
     setLoading(true)
 
+    // 二选一验证
+    if (!email && !phone) {
+      setError('請填寫電郵或手機號碼')
+      setLoading(false)
+      return
+    }
+
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, phone, password, nickname }),
+        body: JSON.stringify({ email, phone, password }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -44,6 +50,7 @@ export default function RegisterPage() {
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-primary">中華促進會</h1>
           <p className="text-gray-500 text-sm mt-1">註冊新帳戶</p>
+          <p className="text-xs text-gray-400 mt-2">電郵或手機號碼二選一</p>
         </div>
 
         {error && (
@@ -71,16 +78,6 @@ export default function RegisterPage() {
               onChange={(e) => setPhone(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
               placeholder="+852 9123 4567"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">暱稱</label>
-            <input
-              type="text"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
-              placeholder="您的暱稱"
             />
           </div>
           <div>
