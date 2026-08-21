@@ -80,6 +80,9 @@ export default function HomePage() {
           <Link href="/auth/login" className="text-sm text-gray-600 hover:text-primary px-3 py-2">
             登入
           </Link>
+          <Link href="/search" className="text-sm text-gray-600 hover:text-primary px-3 py-2">
+            🔍 搜尋
+          </Link>
           <Link href="/auth/register" className="text-sm bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition">
             註冊
           </Link>
@@ -90,6 +93,7 @@ export default function HomePage() {
         <span className="px-4 py-1.5 bg-primary text-white text-sm rounded-full whitespace-nowrap">全部</span>
         <span className="px-4 py-1.5 bg-white text-gray-600 text-sm rounded-full whitespace-nowrap border">資訊服務</span>
         <span className="px-4 py-1.5 bg-white text-gray-600 text-sm rounded-full whitespace-nowrap border">社區服務</span>
+        <span className="px-4 py-1.5 bg-white text-gray-600 text-sm rounded-full whitespace-nowrap border">居民會</span>
         <span className="px-4 py-1.5 bg-white text-gray-600 text-sm rounded-full whitespace-nowrap border">預約服務</span>
         <span className="px-4 py-1.5 bg-white text-gray-600 text-sm rounded-full whitespace-nowrap border">教育服務</span>
         <span className="px-4 py-1.5 bg-white text-gray-600 text-sm rounded-full whitespace-nowrap border">醫療健康</span>
