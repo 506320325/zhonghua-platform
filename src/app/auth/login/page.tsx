@@ -29,8 +29,9 @@ export default function LoginPage() {
       }
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
-      alert('登录成功！')
-      router.push('/')
+      //alert('登录成功！')
+      //直接跳转到用户中心
+      router.push('/user')
     } catch (err) {
       setError('网络错误，请重试')
     } finally {

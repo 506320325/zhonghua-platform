@@ -1,21 +1,50 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-export default function UserPage() {
-  // 模拟已登录用户
-  const isLoggedIn = true
-  const user = { nickname: '測試用戶', email: 'test@example.com' }
+interface User {
+  id: string
+  email: string
+  phone: string
+  nickname: string
+  role: string
+}
 
-  if (!isLoggedIn) {
+export default function UserPage() {
+  const router = useRouter()
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    const userStr = localStorage.getItem('user')
+    
+    if (!token || !userStr) {
+      router.push('/auth/login')
+      return
+    }
+
+    try {
+      setUser(JSON.parse(userStr))
+    } catch {
+      router.push('/auth/login')
+    } finally {
+      setLoading(false)
+    }
+  }, [router])
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4 bg-warm">
-        <div className="text-center">
-          <p className="text-gray-500 mb-4">請先登入</p>
-          <Link href="/auth/login" className="text-primary hover:underline">前往登入</Link>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-400">載入中...</p>
       </div>
     )
+  }
+
+  if (!user) {
+    return null
   }
 
   return (
@@ -27,38 +56,55 @@ export default function UserPage() {
             👤
           </div>
           <div>
-            <h2 className="text-xl font-semibold">{user.nickname}</h2>
-            <p className="text-gray-500 text-sm">{user.email}</p>
+            <h2 className="text-xl font-semibold">{user.nickname || '用戶'}</h2>
+            <p className="text-gray-500 text-sm">{user.email || user.phone}</p>
+            <p className="text-xs text-gray-400 mt-1">角色：{user.role || '普通用戶'}</p>
           </div>
         </div>
       </div>
 
       {/* 功能列表 */}
       <div className="space-y-2">
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center justify-between">
-          <span>📋 我的活動</span>
-          <span className="text-gray-400 text-sm">0 場</span>
+        <Link href="/user/activities" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
+          <div className="flex items-center justify-between">
+            <span>📋 我的活動</span>
+            <span className="text-gray-400 text-sm">0 場</span>
+          </div>
+        </Link>
+        <Link href="/user/bookings" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
+          <div className="flex items-center justify-between">
+            <span>📅 我的預約</span>
+            <span className="text-gray-400 text-sm">0 個</span>
+          </div>
+        </Link>
+        <Link href="/user/branches" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
+          <div className="flex items-center justify-between">
+            <span>🏛️ 我的分會</span>
+            <span className="text-gray-400 text-sm">尚未加入</span>
+          </div>
+        </Link>
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 opacity-50">
+          <div className="flex items-center justify-between">
+            <span>💬 評論</span>
+            <span className="text-gray-400 text-xs">即將推出</span>
+          </div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center justify-between">
-          <span>📅 我的預約</span>
-          <span className="text-gray-400 text-sm">0 個</span>
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 opacity-50">
+          <div className="flex items-center justify-between">
+            <span>⭐ 評分</span>
+            <span className="text-gray-400 text-xs">即將推出</span>
+          </div>
         </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center justify-between">
-          <span>🏛️ 我的分會</span>
-          <span className="text-gray-400 text-sm">尚未加入</span>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center justify-between opacity-50">
-          <span>💬 評論</span>
-          <span className="text-gray-400 text-xs">即將推出</span>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center justify-between opacity-50">
-          <span>⭐ 評分</span>
-          <span className="text-gray-400 text-xs">即將推出</span>
-        </div>
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center justify-between opacity-50">
-          <span>❤️ 關注</span>
-          <span className="text-gray-400 text-xs">即將推出</span>
-        </div>
+        <button
+          onClick={() => {
+            localStorage.removeItem('token')
+            localStorage.removeItem('user')
+            router.push('/auth/login')
+          }}
+          className="w-full bg-red-50 text-red-600 rounded-xl p-4 text-sm font-medium hover:bg-red-100 transition"
+        >
+          登出
+        </button>
       </div>
     </div>
   )
