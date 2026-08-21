@@ -27,7 +27,6 @@ export default function LoginPage() {
         setError(data.error || '登录失败')
         return
       }
-      // 保存 token 和用户信息
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
       alert('登录成功！')
