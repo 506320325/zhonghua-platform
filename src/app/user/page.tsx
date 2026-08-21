@@ -16,7 +16,6 @@ export default function UserPage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -28,10 +27,7 @@ export default function UserPage() {
     }
 
     try {
-      const parsedUser = JSON.parse(userStr)
-      setUser(parsedUser)
-      // 模拟未读消息数量（后续替换为真实API）
-      setUnreadCount(2)
+      setUser(JSON.parse(userStr))
     } catch {
       router.push('/auth/login')
     } finally {
@@ -69,52 +65,56 @@ export default function UserPage() {
 
       {/* 功能列表 */}
       <div className="space-y-2">
-        {/* 消息（带未读红点） */}
+        {/* 消息 */}
         <Link href="/user/messages" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span>💬 訊息</span>
-              {unreadCount > 0 && (
-                <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                  {unreadCount}
-                </span>
-              )}
+              <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">2</span>
             </div>
             <span className="text-gray-400 text-sm">查看全部</span>
           </div>
         </Link>
 
-        <Link href="/tenant/register" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
+        {/* 我建立的主頁 */}
+        <Link href="/pages/my" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
           <div className="flex items-center justify-between">
-            <span>🏪 入駐申請</span>
-            <span className="text-gray-400 text-sm">開通服務號</span>
+            <span>📄 我建立的主頁</span>
+            <span className="text-gray-400 text-sm">查看</span>
           </div>
         </Link>
-        
-        <Link href="/user/activities" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
+
+        {/* 建立主頁 */}
+        <Link href="/pages/create" className="block bg-primary/5 rounded-xl p-4 shadow-sm border border-primary/20 hover:border-primary transition">
           <div className="flex items-center justify-between">
-            <span>📋 我的活動</span>
-            <span className="text-gray-400 text-sm">0 場</span>
+            <span className="font-medium text-primary">➕ 建立主頁</span>
+            <span className="text-primary text-sm">開通組織空間</span>
           </div>
         </Link>
-        <Link href="/user/bookings" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
-          <div className="flex items-center justify-between">
-            <span>📅 我的預約</span>
-            <span className="text-gray-400 text-sm">0 個</span>
-          </div>
-        </Link>
-        <Link href="/user/branches" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
+
+        {/* 我的分會 */}
+        <Link href="/branches/my" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
           <div className="flex items-center justify-between">
             <span>🏛️ 我的分會</span>
-            <span className="text-gray-400 text-sm">尚未加入</span>
+            <span className="text-gray-400 text-sm">查看</span>
           </div>
         </Link>
+
+        {/* 申請分會 */}
+        <Link href="/branches/apply" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
+          <div className="flex items-center justify-between">
+            <span>🏛️ 申請分會</span>
+            <span className="text-gray-400 text-sm">成為會長</span>
+          </div>
+        </Link>
+
         <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 opacity-50">
           <div className="flex items-center justify-between">
-            <span>⭐ 評分</span>
-            <span className="text-gray-400 text-xs">即將推出</span>
+            <span>📋 我的活動</span>
+            <span className="text-gray-400 text-sm">即將推出</span>
           </div>
         </div>
+
         <button
           onClick={() => {
             localStorage.removeItem('token')
