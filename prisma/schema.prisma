@@ -72,6 +72,12 @@ model User {
   password        String
   nickname        String?
   avatar          String?
+  education        String?
+  skills           String?
+  hobbies          String?
+  bio              String?      @db.Text
+  tags             String?
+  pets             String?
   role            UserRole     @default(USER)
   verified        Boolean      @default(false)
   canPublishVideo  Boolean      @default(false)
@@ -99,6 +105,7 @@ model User {
   handledReports     Report[]     @relation("ReportHandler")
   auditLogs            AuditLog[]   @relation("Auditor")
   notifications        Notification[]
+  organizationMembers OrganizationMember[]
   activitySignups      ActivitySignup[]
 }
 
@@ -127,6 +134,8 @@ model Tenant {
   activities      Activity[]
   posts           Post[]
   members         TenantMember[]
+  roles               OrganizationRole[]
+  organizationMembers  OrganizationMember[]
 }
 
 model TenantStaff {
@@ -157,6 +166,44 @@ model TenantMember {
 }
 
 // ============================================
+
+// ============================================
+// 5. 组织职位与成员
+// ============================================
+
+model OrganizationRole {
+  id              String   @id @default(cuid())
+  tenantId        String?
+  branchId        String?
+  pageId          String?
+  name            String
+  level           Int      @default(0)
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch Branch? @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  page   Page?   @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  members OrganizationMember[]
+}
+
+model OrganizationMember {
+  id              String   @id @default(cuid())
+  tenantId        String?
+  branchId        String?
+  pageId          String?
+  userId          String
+  roleId          String
+  joinedAt        DateTime @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch Branch? @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  page   Page?   @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+  role   OrganizationRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+}
+
 // 5. 主页模块
 // ============================================
 
@@ -182,6 +229,8 @@ model Page {
   creator         User         @relation("PageCreator", fields: [createdById], references: [id])
   staff           PageStaff[]
   posts           Post[]
+  roles               OrganizationRole[]
+  organizationMembers  OrganizationMember[]
 }
 
 model PageStaff {
@@ -242,6 +291,8 @@ model Branch {
 
   staff           BranchStaff[]
   posts           Post[]
+  roles               OrganizationRole[]
+  organizationMembers  OrganizationMember[]
 }
 
 model BranchStaff {

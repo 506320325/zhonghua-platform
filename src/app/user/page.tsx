@@ -65,6 +65,14 @@ export default function UserPage() {
 
       {/* 功能列表 */}
       <div className="space-y-2">
+
+        {/* 編輯個人資料 */}
+        <Link href="/user/profile" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
+          <div className="flex items-center justify-between">
+            <span>📝 編輯個人資料</span>
+            <span className="text-gray-400 text-sm">學歷 / 特長 / 愛好 / 寵物</span>
+          </div>
+        </Link>
         {/* 消息 */}
         <Link href="/user/messages" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
           <div className="flex items-center justify-between">
