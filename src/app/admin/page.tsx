@@ -22,6 +22,8 @@ export default function AdminPage() {
   const [hasToken, setHasToken] = useState(false)
   const [error, setError] = useState('')
   const [actionId, setActionId] = useState('')
+  const [videoEmail, setVideoEmail] = useState('')
+  const [videoMsg, setVideoMsg] = useState('')
 
   const load = async () => {
     const token = localStorage.getItem('token')
@@ -96,6 +98,30 @@ export default function AdminPage() {
 
   const typeLabel = (type: string) => (type === 'page' ? '主頁' : '分會')
 
+  const handleVideoPermission = async (canPublishVideo: boolean) => {
+    const token = localStorage.getItem('token')
+    if (!token || !videoEmail) return
+    setVideoMsg('')
+    try {
+      const res = await fetch('/api/admin/users/video-permission', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ email: videoEmail, canPublishVideo }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setVideoMsg(data.error || '操作失敗')
+        return
+      }
+      setVideoMsg(data.message || '操作完成')
+    } catch {
+      setVideoMsg('網絡錯誤，請重試')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-warm px-4 py-6 pb-24">
       <div className="max-w-3xl mx-auto">
@@ -109,6 +135,32 @@ export default function AdminPage() {
           </button>
         </div>
         <p className="text-gray-500 text-sm mb-6">管理所有主頁與分會申請</p>
+
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-6">
+          <h2 className="font-semibold text-gray-800 mb-3">影片發布授權</h2>
+          <div className="flex gap-2">
+            <input
+              type="email"
+              value={videoEmail}
+              onChange={(e) => setVideoEmail(e.target.value)}
+              placeholder="輸入用戶 Email"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+            />
+            <button
+              onClick={() => handleVideoPermission(true)}
+              className="bg-primary text-white text-sm px-4 py-2 rounded-lg hover:bg-primary-dark transition"
+            >
+              授予
+            </button>
+            <button
+              onClick={() => handleVideoPermission(false)}
+              className="bg-gray-200 text-gray-600 text-sm px-4 py-2 rounded-lg hover:bg-gray-300 transition"
+            >
+              取消
+            </button>
+          </div>
+          {videoMsg && <p className="text-xs text-gray-500 mt-2">{videoMsg}</p>}
+        </div>
 
         {!hasToken && (
           <div className="bg-white rounded-xl p-6 text-center shadow-sm">
@@ -181,4 +233,6 @@ export default function AdminPage() {
     </div>
   )
 }
+
+
 

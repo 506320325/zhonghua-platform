@@ -73,6 +73,7 @@ model User {
   avatar          String?
   role            UserRole     @default(USER)
   verified        Boolean      @default(false)
+  canPublishVideo  Boolean      @default(false)
   isSupervisor    Boolean      @default(false)
   points          Int          @default(0)
   reportCount     Int          @default(0)
@@ -177,6 +178,7 @@ model Page {
 
   creator         User         @relation("PageCreator", fields: [createdById], references: [id])
   staff           PageStaff[]
+  posts           Post[]
 }
 
 model PageStaff {
@@ -232,6 +234,7 @@ model Branch {
   updatedAt       DateTime     @updatedAt
 
   staff           BranchStaff[]
+  posts           Post[]
 }
 
 model BranchStaff {
@@ -294,11 +297,13 @@ model ActivitySignup {
 
 model Post {
   id              String       @id @default(cuid())
-  title           String
+  title           String?
   content         String?
-  category        String
-  communityCode   String
+  category        String?
+  communityCode   String?
   images          String?
+  videoUrl        String?
+  videoDuration   Int?
   status          String       @default("PUBLISHED")
   viewCount       Int          @default(0)
   likeCount       Int          @default(0)
@@ -307,9 +312,13 @@ model Post {
 
   userId          String
   tenantId        String?
+  pageId          String?
+  branchId        String?
 
   user            User         @relation(fields: [userId], references: [id])
   tenant          Tenant?      @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  page            Page?        @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  branch          Branch?      @relation(fields: [branchId], references: [id], onDelete: SetNull)
 }
 
 // ============================================

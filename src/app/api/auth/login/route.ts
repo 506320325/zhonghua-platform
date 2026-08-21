@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
         phone: user.phone,
         nickname: user.nickname,
         role: user.role,
+        canPublishVideo: user.canPublishVideo,
       },
     })
   } catch (error) {

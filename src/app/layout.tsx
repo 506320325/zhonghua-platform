@@ -24,6 +24,7 @@ export default function RootLayout({
     { path: '/', label: '🏠 首頁' },
     { path: '/tenant/register', label: '🏪 入駐' },
     { path: '/branch/apply', label: '🏛️ 申請分會' },
+    { path: '/posts/create', label: '✏️ 發布' },
     { path: '/user', label: '👤 我的' },
   ]
 
