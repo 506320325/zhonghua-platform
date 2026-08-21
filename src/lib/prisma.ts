@@ -1,16 +1,24 @@
+import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
+import { Pool } from 'pg'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-// 在构建时，如果 DATABASE_URL 缺失，Prisma 会报错，但我们可以通过判断环境来避免
-// 但这里我们保持原样，因为构建时 Next.js 不会执行 API 路由，但会解析模块
-// 为了更安全，延迟初始化：但先保持现状，主要是确保 prisma generate 已执行
+// 创建 PostgreSQL 连接池
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+})
 
+// 创建 Prisma 适配器
+const adapter = new PrismaPg(pool)
+
+// 创建 Prisma 客户端
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
+    adapter,
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   })
 
