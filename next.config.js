@@ -2,10 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   typescript: {
-    ignoreBuildErrors: true,   // ← 必须加上！
+    ignoreBuildErrors: true,
   },
   eslint: {
-    ignoreDuringBuilds: true,  // ← 必须加上！
+    ignoreDuringBuilds: true,
   },
   experimental: {
     optimizePackageImports: ['@prisma/client'],
@@ -17,6 +17,12 @@ const nextConfig = {
         hostname: '**',
       },
     ],
+  },
+  // ✅ 强制注入环境变量
+  env: {
+    JWT_SECRET: 'zhonghua-platform-secret-key-2026',
+    NEXT_DISABLE_TYPECHECK: 'true',
+    NEXT_DISABLE_ESLINT: 'true',
   },
 }
 

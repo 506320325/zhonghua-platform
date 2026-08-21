@@ -1,7 +1,8 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret'
+// 直接从代码中设置 JWT_SECRET
+const JWT_SECRET = 'zhonghua-platform-secret-key-2026'
 
 export function hashPassword(password: string): string {
   return bcrypt.hashSync(password, 10)
