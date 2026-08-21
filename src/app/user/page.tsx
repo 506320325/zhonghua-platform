@@ -115,6 +115,15 @@ export default function UserPage() {
           </div>
         </div>
 
+        {/* 隱藏後台入口 */}
+        <div className="mt-4 pt-4 border-t border-gray-100 text-center text-xs text-gray-300">
+          <Link href="/tenant/dashboard" className="hover:text-gray-500">租戶後台</Link>
+          <span className="mx-2">·</span>
+          <Link href="/branch/dashboard" className="hover:text-gray-500">分會後台</Link>
+          <span className="mx-2">·</span>
+          <Link href="/admin" className="hover:text-gray-500">總後台</Link>
+        </div>
+
         <button
           onClick={() => {
             localStorage.removeItem('token')

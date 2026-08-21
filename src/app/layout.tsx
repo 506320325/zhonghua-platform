@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import PwaInstallBanner from '@/components/PwaInstallBanner'
 import './globals.css'
 
 export default function RootLayout({
@@ -36,6 +37,7 @@ export default function RootLayout({
     '/branch/apply': '申請分會',
     '/branch/dashboard': '分會後台',
     '/admin/branches': '分會審批',
+    '/admin': '總後台審批',
   }
 
   // 当前页面名称（如果首页没有显示）
@@ -72,6 +74,8 @@ export default function RootLayout({
 
         {/* 主内容 */}
         <main className="max-w-4xl mx-auto px-4 py-4">
+
+        <PwaInstallBanner />
           {children}
         </main>
 
