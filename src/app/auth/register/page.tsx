@@ -29,7 +29,6 @@ export default function RegisterPage() {
         setError(data.error || '注册失败')
         return
       }
-      // 注册成功，跳转到登录页
       alert('注册成功！请登录')
       router.push('/auth/login')
     } catch (err) {
