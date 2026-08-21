@@ -91,6 +91,8 @@ export async function POST(req: NextRequest) {
           scope: branchType === 'COMMUNITY_LIFE' ? 'community' : null,
           canAllResidentsJoin: branchType === 'COMMUNITY_LIFE' ? true : false,
           councillorWeighted: branchType === 'COMMUNITY_LIFE' ? true : false,
+          joinRequiresApproval: branchType === 'COMMUNITY' ? true : false,
+          joinRequiresReferrer: branchType === 'COMMUNITY' ? true : false,
           termStart: start,
           termEnd: end,
           status: 'PENDING',

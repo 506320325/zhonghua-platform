@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 
 export default function JoinBranchButton({ branchId }: { branchId: string }) {
   const router = useRouter()
+  const [referrerEmail, setReferrerEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
 
@@ -24,7 +25,7 @@ export default function JoinBranchButton({ branchId }: { branchId: string }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ branchId }),
+        body: JSON.stringify({ branchId, referrerEmail }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -40,7 +41,14 @@ export default function JoinBranchButton({ branchId }: { branchId: string }) {
   }
 
   return (
-    <div>
+    <div className="space-y-3">
+      <input
+        type="email"
+        value={referrerEmail}
+        onChange={(e) => setReferrerEmail(e.target.value)}
+        placeholder="推薦人 Email（如需要）"
+        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+      />
       <button
         onClick={handleJoin}
         disabled={loading}

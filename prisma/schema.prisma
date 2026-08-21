@@ -218,6 +218,8 @@ model Page {
   phone           String?
   email           String?
   description     String?      @db.Text
+  joinRequiresApproval Boolean  @default(false)
+  joinRequiresReferrer Boolean @default(false)
   certNumber      String?
   parentOrg       String?
   declaration     String?      @db.Text
@@ -279,6 +281,8 @@ model Branch {
   communityCode   String
   category        String?
   description     String?
+  joinRequiresApproval Boolean  @default(false)
+  joinRequiresReferrer Boolean @default(false)
   isExclusive      Boolean      @default(false)
   scope            String?
   canAllResidentsJoin Boolean @default(false)
@@ -300,6 +304,9 @@ model BranchStaff {
   branchId        String
   userId          String
   role            String       @default("PRESIDENT")
+  status          String       @default("ACTIVE")
+  referrerId      String?
+  referrerEmail   String?
   createdAt       DateTime     @default(now())
 
   branch          Branch       @relation(fields: [branchId], references: [id], onDelete: Cascade)
@@ -316,6 +323,8 @@ model Activity {
   id              String       @id @default(cuid())
   title           String
   description     String?
+  joinRequiresApproval Boolean  @default(false)
+  joinRequiresReferrer Boolean @default(false)
   isExclusive      Boolean      @default(false)
   scope            String?
   canAllResidentsJoin Boolean @default(false)
@@ -493,6 +502,8 @@ model BranchTypeConfig {
   type            BranchType   @unique
   label           String
   description     String?
+  joinRequiresApproval Boolean  @default(false)
+  joinRequiresReferrer Boolean @default(false)
   isExclusive      Boolean      @default(false)
   scope            String?
   canAllResidentsJoin Boolean @default(false)

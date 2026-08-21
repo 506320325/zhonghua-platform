@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import OrgRoleManager from '@/components/OrgRoleManager'
+import OrgJoinSettings from '@/components/OrgJoinSettings'
 
 export default function ManagePage() {
   const params = useParams()
@@ -14,7 +15,10 @@ export default function ManagePage() {
         <h1 className="text-2xl font-bold text-primary">主頁職位管理</h1>
         <Link href="/pages/my" className="text-sm text-gray-500 hover:text-primary">返回</Link>
       </div>
-      <OrgRoleManager type="page" id={id} />
+      <div className="space-y-5">
+        <OrgRoleManager type="page" id={id} />
+        <OrgJoinSettings type="page" id={id} />
+      </div>
     </div>
   )
 }
