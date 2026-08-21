@@ -11,6 +11,8 @@ interface Page {
   category: string
   communityCode: string
   status: 'PENDING' | 'APPROVED' | 'REJECTED'
+  slug: string
+  role: string
   createdAt: string
 }
 
@@ -18,6 +20,7 @@ export default function MyPages() {
   const router = useRouter()
   const [pages, setPages] = useState<Page[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -26,29 +29,27 @@ export default function MyPages() {
       return
     }
 
-    // 模拟数据
-    const mockPages: Page[] = [
-      {
-        id: '1',
-        name: '火炭羽毛球會',
-        type: 'SPORTS',
-        category: '社區服務',
-        communityCode: '火炭',
-        status: 'APPROVED',
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: '2',
-        name: '香港福建同鄉會',
-        type: 'FELLOWSHIP',
-        category: '社區服務',
-        communityCode: '銅鑼灣',
-        status: 'PENDING',
-        createdAt: new Date().toISOString(),
-      },
-    ]
-    setPages(mockPages)
-    setLoading(false)
+    const load = async () => {
+      try {
+        const res = await fetch('/api/pages/my', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          setError(data.error || '讀取失敗')
+          return
+        }
+        setPages(data.data || [])
+      } catch (err) {
+        setError('網絡錯誤，請重試')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    load()
   }, [router])
 
   const statusMap = {
@@ -73,6 +74,10 @@ export default function MyPages() {
           + 建立主頁
         </Link>
       </div>
+
+      {error && (
+        <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-4">{error}</div>
+      )}
 
       {pages.length === 0 ? (
         <div className="text-center py-12">
@@ -101,7 +106,7 @@ export default function MyPages() {
               {page.status === 'APPROVED' && (
                 <div className="mt-3 flex gap-2">
                   <Link
-                    href={`/p/${page.id}`}
+                    href={`/p/${page.slug}`}
                     className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full hover:bg-primary/20"
                   >
                     查看主頁

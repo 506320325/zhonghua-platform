@@ -9,8 +9,9 @@ interface Branch {
   name: string
   type: string
   communityCode: string
-  role: 'owner' | 'member'
+  role: string
   status: 'PENDING' | 'APPROVED' | 'REJECTED'
+  slug: string
   createdAt: string
 }
 
@@ -18,6 +19,7 @@ export default function MyBranches() {
   const router = useRouter()
   const [branches, setBranches] = useState<Branch[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -26,29 +28,27 @@ export default function MyBranches() {
       return
     }
 
-    // 模拟数据
-    const mockBranches: Branch[] = [
-      {
-        id: '1',
-        name: '火炭調解分會',
-        type: 'MEDIATION',
-        communityCode: '火炭',
-        role: 'owner',
-        status: 'APPROVED',
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: '2',
-        name: '沙田法律服務分會',
-        type: 'LEGAL',
-        communityCode: '沙田',
-        role: 'member',
-        status: 'APPROVED',
-        createdAt: new Date().toISOString(),
-      },
-    ]
-    setBranches(mockBranches)
-    setLoading(false)
+    const load = async () => {
+      try {
+        const res = await fetch('/api/branches/my', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          setError(data.error || '讀取失敗')
+          return
+        }
+        setBranches(data.data || [])
+      } catch (err) {
+        setError('網絡錯誤，請重試')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    load()
   }, [router])
 
   const statusMap = {
@@ -56,6 +56,8 @@ export default function MyBranches() {
     APPROVED: { label: '已通過', color: 'bg-green-100 text-green-700' },
     REJECTED: { label: '已拒絕', color: 'bg-red-100 text-red-700' },
   }
+
+  const isOwner = (role: string) => role === 'PRESIDENT' || role === 'OWNER'
 
   if (loading) {
     return (
@@ -74,6 +76,10 @@ export default function MyBranches() {
         </Link>
       </div>
 
+      {error && (
+        <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-4">{error}</div>
+      )}
+
       {branches.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-400 mb-4">尚未加入或建立分會</p>
@@ -88,9 +94,9 @@ export default function MyBranches() {
                   <div className="flex items-center gap-2">
                     <h3 className="font-semibold text-gray-800">{branch.name}</h3>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      branch.role === 'owner' ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-500'
+                      isOwner(branch.role) ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-500'
                     }`}>
-                      {branch.role === 'owner' ? '建立者' : '成員'}
+                      {isOwner(branch.role) ? '會長' : '成員'}
                     </span>
                   </div>
                   <p className="text-sm text-gray-500">{branch.type} · 📍 {branch.communityCode}</p>
@@ -104,12 +110,12 @@ export default function MyBranches() {
               {branch.status === 'APPROVED' && (
                 <div className="mt-3 flex gap-2">
                   <Link
-                    href={`/branches/${branch.id}`}
+                    href={`/b/${branch.slug}`}
                     className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full hover:bg-primary/20"
                   >
                     查看分會
                   </Link>
-                  {branch.role === 'owner' && (
+                  {isOwner(branch.role) && (
                     <Link
                       href={`/branches/${branch.id}/manage`}
                       className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full hover:bg-gray-200"
