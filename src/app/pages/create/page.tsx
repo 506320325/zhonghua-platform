@@ -4,13 +4,23 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+// 组织类型（独立于认证方式）
 const orgTypes = [
-  { value: 'MERCHANT', label: '商戶（商業登記）' },
-  { value: 'ASSOCIATION', label: '社團/協會（政府登記）' },
-  { value: 'FELLOWSHIP', label: '聯誼會/同鄉會（自發組織）' },
+  { value: 'MERCHANT', label: '商戶' },
+  { value: 'ASSOCIATION', label: '社團/協會' },
+  { value: 'FELLOWSHIP', label: '聯誼會/同鄉會' },
   { value: 'ALUMNI', label: '校友會' },
-  { value: 'SPORTS', label: '運動/興趣團體（自發組織）' },
+  { value: 'SPORTS', label: '運動/興趣團體' },
+  { value: 'CHARITY', label: '慈善組織' },
   { value: 'OTHER', label: '其他' },
+]
+
+// 认证方式（独立选择）
+const certTypes = [
+  { value: 'business', label: '商業登記證' },
+  { value: 'government', label: '政府登記/牌照（如警務處）' },
+  { value: 'parent', label: '上級機構證明' },
+  { value: 'declaration', label: '負責人聲明（自發組織）' },
 ]
 
 const categories = [
@@ -30,23 +40,22 @@ const communities = [
 
 export default function CreatePage() {
   const router = useRouter()
-  const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     name: '',
-    type: '',
+    orgType: '',
+    certType: '',
     category: '',
     communityCode: '',
     phone: '',
     email: '',
     description: '',
-    // 认证材料
-    certType: 'declaration', // declaration / business / government
-    certFile: null as File | null,
     certNumber: '',
     parentOrg: '',
     declaration: '',
+    // 文件上传
+    certFile: null as File | null,
   })
   const [agreed, setAgreed] = useState(false)
 
@@ -71,6 +80,13 @@ export default function CreatePage() {
       return
     }
 
+    // 验证：如果认证方式不是 declaration，需要上传文件
+    if (formData.certType !== 'declaration' && !formData.certFile) {
+      setError('請上傳認證文件（拍照或圖片）')
+      setLoading(false)
+      return
+    }
+
     try {
       const token = localStorage.getItem('token')
       if (!token) {
@@ -79,19 +95,20 @@ export default function CreatePage() {
         return
       }
 
-      // 构建提交数据
+      // 构建提交数据（暂时用 JSON，文件上传后面可改为 multipart/form-data）
       const submitData = {
         name: formData.name,
-        type: formData.type,
+        orgType: formData.orgType,
+        certType: formData.certType,
         category: formData.category,
         communityCode: formData.communityCode,
         phone: formData.phone,
         email: formData.email,
         description: formData.description,
-        certType: formData.certType,
         certNumber: formData.certNumber,
         parentOrg: formData.parentOrg,
         declaration: formData.declaration,
+        // 文件暂不处理，后续用 FormData
       }
 
       const res = await fetch('/api/pages/create', {
@@ -126,7 +143,9 @@ export default function CreatePage() {
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-sm text-blue-700">
         <p className="font-medium">📌 建立主頁需要：</p>
         <ul className="list-disc list-inside mt-1 space-y-0.5 text-blue-600">
-          <li>商業登記 / 政府登記 / 負責人聲明（三選一）</li>
+          <li>選擇組織類型</li>
+          <li>選擇認證方式（商業登記 / 政府登記 / 上級證明 / 聲明）</li>
+          <li>上傳認證文件（拍照或圖片）</li>
           <li>同意《私隱條例》和《平台條例》</li>
         </ul>
       </div>
@@ -154,17 +173,92 @@ export default function CreatePage() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">組織類型 *</label>
           <select
-            name="type"
-            value={formData.type}
+            name="orgType"
+            value={formData.orgType}
             onChange={handleChange}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
             required
           >
-            <option value="">請選擇類型</option>
+            <option value="">請選擇組織類型</option>
             {orgTypes.map(t => (
               <option key={t.value} value={t.value}>{t.label}</option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">認證方式 *</label>
+          <select
+            name="certType"
+            value={formData.certType}
+            onChange={handleChange}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+            required
+          >
+            <option value="">請選擇認證方式</option>
+            {certTypes.map(t => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* 根据认证方式显示额外字段 */}
+        {(formData.certType === 'business' || formData.certType === 'government') && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">證件編號</label>
+            <input
+              type="text"
+              name="certNumber"
+              value={formData.certNumber}
+              onChange={handleChange}
+              placeholder="請輸入證件編號"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+            />
+          </div>
+        )}
+
+        {formData.certType === 'parent' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">上級機構名稱</label>
+            <input
+              type="text"
+              name="parentOrg"
+              value={formData.parentOrg}
+              onChange={handleChange}
+              placeholder="如：XX大學學生事務處"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+            />
+          </div>
+        )}
+
+        {formData.certType === 'declaration' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">聲明內容</label>
+            <textarea
+              name="declaration"
+              value={formData.declaration}
+              onChange={handleChange}
+              rows={3}
+              placeholder="本人聲明：此組織為自發成立，...（請簡述組織性質和負責人）"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none resize-none"
+            />
+          </div>
+        )}
+
+        {/* 文件上传 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {formData.certType === 'declaration' ? '聲明人身份證明（可選）' : '認證文件（拍照或圖片）*'}
+          </label>
+          <input
+            type="file"
+            accept="image/*,.pdf"
+            onChange={handleFileChange}
+            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+          />
+          {formData.certFile && (
+            <p className="text-xs text-green-600 mt-1">已選取：{formData.certFile.name}</p>
+          )}
         </div>
 
         <div>
@@ -235,85 +329,6 @@ export default function CreatePage() {
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none resize-none"
           />
         </div>
-
-        {/* 认证方式 */}
-        <div className="border-t border-gray-200 pt-5">
-          <p className="font-medium text-gray-700 mb-3">認證方式 *</p>
-          <div className="space-y-3">
-            <label className="flex items-center gap-3 p-3 border rounded-xl cursor-pointer hover:bg-gray-50">
-              <input
-                type="radio"
-                name="certType"
-                value="business"
-                checked={formData.certType === 'business'}
-                onChange={handleChange}
-              />
-              <span>商業登記證</span>
-            </label>
-            <label className="flex items-center gap-3 p-3 border rounded-xl cursor-pointer hover:bg-gray-50">
-              <input
-                type="radio"
-                name="certType"
-                value="government"
-                checked={formData.certType === 'government'}
-                onChange={handleChange}
-              />
-              <span>政府部門登記 / 授權信</span>
-            </label>
-            <label className="flex items-center gap-3 p-3 border rounded-xl cursor-pointer hover:bg-gray-50">
-              <input
-                type="radio"
-                name="certType"
-                value="declaration"
-                checked={formData.certType === 'declaration'}
-                onChange={handleChange}
-              />
-              <span>負責人聲明（自發組織）</span>
-            </label>
-          </div>
-        </div>
-
-        {(formData.certType === 'business' || formData.certType === 'government') && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">證件編號</label>
-            <input
-              type="text"
-              name="certNumber"
-              value={formData.certNumber}
-              onChange={handleChange}
-              placeholder="請輸入證件編號"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
-            />
-          </div>
-        )}
-
-        {formData.certType === 'declaration' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">聲明內容</label>
-            <textarea
-              name="declaration"
-              value={formData.declaration}
-              onChange={handleChange}
-              rows={3}
-              placeholder="本人聲明：此組織為自發成立，...（請簡述組織性質和負責人）"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none resize-none"
-            />
-          </div>
-        )}
-
-        {formData.certType === 'government' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">上級機構名稱</label>
-            <input
-              type="text"
-              name="parentOrg"
-              value={formData.parentOrg}
-              onChange={handleChange}
-              placeholder="如：XX大學學生事務處"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
-            />
-          </div>
-        )}
 
         {/* 条例勾选 */}
         <div className="border-t border-gray-200 pt-5">
