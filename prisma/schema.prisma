@@ -219,6 +219,7 @@ model BranchApplication {
 
 model Branch {
   id              String       @id @default(cuid())
+  slug            String       @unique
   name            String
   branchType      BranchType
   communityCode   String
@@ -226,7 +227,7 @@ model Branch {
   description     String?
   termStart       DateTime
   termEnd         DateTime
-  status          String       @default("ACTIVE")
+  status          String       @default("PENDING")
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
