@@ -27,10 +27,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: '账号不存在' }, { status: 401 })
     }
 
+    if (user.blocked) {
+      return NextResponse.json({ error: '账号已被封禁' }, { status: 403 })
+    }
+
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      return NextResponse.json({ error: '登录失败次数过多，请稍后再试' }, { status: 423 })
+    }
+
     const isValid = await bcrypt.compare(password, user.password)
     if (!isValid) {
+      const attempts = user.failedLoginAttempts + 1
+      const lockedUntil = attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000) : null
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          failedLoginAttempts: attempts,
+          ...(lockedUntil ? { lockedUntil } : {}),
+        },
+      })
       return NextResponse.json({ error: '密码错误' }, { status: 401 })
     }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { failedLoginAttempts: 0, lockedUntil: null },
+    })
 
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },

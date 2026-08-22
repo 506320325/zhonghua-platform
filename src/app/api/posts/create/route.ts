@@ -7,6 +7,7 @@ const MAX_IMAGES = 3
 const MAX_IMAGE_BYTES = 1024 * 1024
 const MAX_VIDEO_DURATION_SECONDS = 15
 const MAX_DAILY_POSTS = 3
+const SENSITIVE_WORDS = ['赌博', '色情', '暴力', '诈骗', '代开发票']
 
 function estimateBase64Bytes(dataUrl: string): number {
   const base64 = dataUrl.split(',')[1] || ''
@@ -45,6 +46,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `每人每天最多發布 ${MAX_DAILY_POSTS} 篇` }, { status: 429 })
     }
 
+    const isNewUser = (Date.now() - new Date(user.createdAt).getTime()) < 24 * 60 * 60 * 1000
+    if (isNewUser && todayPostCount >= 1) {
+      return NextResponse.json({ error: '新用戶 24 小時內每日限發 1 篇' }, { status: 429 })
+    }
+
+
     const body = await req.json()
     const {
       title,
@@ -73,6 +80,12 @@ export async function POST(req: NextRequest) {
     if (text.length > MAX_TEXT_LENGTH) {
       return NextResponse.json({ error: `文字不能超過 ${MAX_TEXT_LENGTH} 字` }, { status: 400 })
     }
+
+    const sensitiveWord = SENSITIVE_WORDS.find((w) => text.includes(w) || (title && String(title).includes(w)))
+    if (sensitiveWord) {
+      return NextResponse.json({ error: '內容包含敏感詞，請修改後再發布' }, { status: 400 })
+    }
+
 
     if (!text && (!images || images.length === 0) && !videoUrl) {
       return NextResponse.json({ error: '請輸入文字或上傳圖片/影片' }, { status: 400 })

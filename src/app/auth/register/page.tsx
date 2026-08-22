@@ -9,6 +9,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
+  const [agree, setAgree] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -28,7 +29,7 @@ export default function RegisterPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, phone, password }),
+        body: JSON.stringify({ email, phone, password, agree }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -91,6 +92,11 @@ export default function RegisterPage() {
               required
             />
           </div>
+          <label className="flex items-start gap-2 text-xs text-gray-600">
+            <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-0.5" required />
+            <span>我已閱讀並同意《隱私政策》和《平台條例》</span>
+          </label>
+
           <button
             type="submit"
             disabled={loading}

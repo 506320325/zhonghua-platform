@@ -5,13 +5,16 @@ import bcrypt from 'bcryptjs'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { email, phone, password, nickname } = body
+    const { email, phone, password, nickname, agree } = body
 
     if (!email && !phone) {
       return NextResponse.json({ error: 'Email 或 手机号 至少填一项' }, { status: 400 })
     }
-    if (!password || password.length < 6) {
-      return NextResponse.json({ error: '密码至少6位' }, { status: 400 })
+    if (!agree) {
+      return NextResponse.json({ error: '请先同意隐私政策与平台条例' }, { status: 400 })
+    }
+    if (!password || password.length < 8 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+      return NextResponse.json({ error: '密码至少8位，且须包含字母和数字' }, { status: 400 })
     }
 
     const existingUser = await prisma.user.findFirst({
