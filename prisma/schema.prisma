@@ -109,6 +109,7 @@ model User {
   eventPages        EventPage[]
   eventComments     EventComment[]
   announcements     Announcement[]
+  sentMessages      Message[]
   auditLogs            AuditLog[]   @relation("Auditor")
   notifications        Notification[]
   organizationMembers OrganizationMember[]
@@ -529,6 +530,34 @@ model Announcement {
   createdByUser User     @relation(fields: [createdBy], references: [id])
   tenant        Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   branch        Branch?  @relation(fields: [branchId], references: [id], onDelete: Cascade)
+}
+
+
+// ============================================
+// 9. 在線會話
+// ============================================
+
+model Conversation {
+  id              String   @id @default(cuid())
+  participants    Json
+  type            String   @default("USER_TO_PLATFORM")
+  lastMessageAt   DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  messages Message[]
+}
+
+model Message {
+  id              String   @id @default(cuid())
+  conversationId  String
+  senderId        String
+  content         String   @db.Text
+  isRead          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender        User        @relation(fields: [senderId], references: [id])
 }
 
 model Rating {
