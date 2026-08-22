@@ -103,6 +103,9 @@ model User {
   followers            Follow[]     @relation("Followee")
   sentReports          Report[]     @relation("Reporter")
   handledReports     Report[]     @relation("ReportHandler")
+  stampsSent          Stamp[]      @relation("StampFrom")
+  stampsReceived      Stamp[]      @relation("StampTo")
+  dailyStamps         DailyStamp[]
   auditLogs            AuditLog[]   @relation("Auditor")
   notifications        Notification[]
   organizationMembers OrganizationMember[]
@@ -134,6 +137,7 @@ model Tenant {
   activities      Activity[]
   posts           Post[]
   members         TenantMember[]
+  stampsReceived      Stamp[]
   roles               OrganizationRole[]
   organizationMembers  OrganizationMember[]
 }
@@ -297,6 +301,7 @@ model Branch {
   posts           Post[]
   roles               OrganizationRole[]
   organizationMembers  OrganizationMember[]
+  stampsReceived      Stamp[]
 }
 
 model BranchStaff {
@@ -393,6 +398,46 @@ model Post {
 }
 
 // ============================================
+
+// ============================================
+// 7.5 信贴
+// ============================================
+
+model Stamp {
+  id              String   @id @default(cuid())
+  fromUserId      String
+  toUserId        String?
+  toTenantId      String?
+  toBranchId      String?
+  pattern         String
+  color           String
+  message         String?
+  isRead          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  fromUser  User    @relation("StampFrom", fields: [fromUserId], references: [id])
+  toUser    User?   @relation("StampTo", fields: [toUserId], references: [id])
+  toTenant  Tenant? @relation(fields: [toTenantId], references: [id])
+  toBranch  Branch? @relation(fields: [toBranchId], references: [id])
+
+  @@index([toUserId])
+  @@index([toTenantId])
+  @@index([toBranchId])
+  @@index([createdAt])
+}
+
+model DailyStamp {
+  id              String   @id @default(cuid())
+  userId          String
+  date            String
+  remaining       Int      @default(3)
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+}
+
 // 8. 评价模块
 // ============================================
 

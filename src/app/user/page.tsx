@@ -73,6 +73,14 @@ export default function UserPage() {
             <span className="text-gray-400 text-sm">學歷 / 特長 / 愛好 / 寵物</span>
           </div>
         </Link>
+
+        {/* 信貼牆 */}
+        <Link href="/stamps" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
+          <div className="flex items-center justify-between">
+            <span>💌 信貼牆</span>
+            <span className="text-gray-400 text-sm">每日 3 張信貼</span>
+          </div>
+        </Link>
         {/* 消息 */}
         <Link href="/user/messages" className="block bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-primary transition">
           <div className="flex items-center justify-between">
