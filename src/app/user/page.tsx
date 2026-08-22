@@ -16,6 +16,9 @@ export default function UserPage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showAdminPanel, setShowAdminPanel] = useState(false)
+  const [hasPage, setHasPage] = useState(false)
+  const [hasBranch, setHasBranch] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -33,6 +36,14 @@ export default function UserPage() {
     } finally {
       setLoading(false)
     }
+
+    Promise.all([
+      fetch('/api/pages/my', { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json()),
+      fetch('/api/branches/my', { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json())
+    ]).then(([p, b]) => {
+      setHasPage((p.data || []).length > 0)
+      setHasBranch((b.data || []).length > 0)
+    }).catch(() => {})
   }, [router])
 
   if (loading) {
@@ -140,13 +151,24 @@ export default function UserPage() {
         </div>
 
         {/* 隱藏後台入口 */}
-        <div className="mt-4 pt-4 border-t border-gray-100 text-center text-xs text-gray-300">
-          <Link href="/tenant/dashboard" className="hover:text-gray-500">租戶後台</Link>
-          <span className="mx-2">·</span>
-          <Link href="/branch/dashboard" className="hover:text-gray-500">分會後台</Link>
-          <span className="mx-2">·</span>
-          <Link href="/admin" className="hover:text-gray-500">總後台</Link>
-        </div>
+        { (hasPage || hasBranch || user?.role === 'PLATFORM_ADMIN') && (
+          <div className="mt-4 flex flex-col items-center">
+            <button
+              onClick={() => setShowAdminPanel((v) => !v)}
+              className="w-9 h-9 rounded-full bg-white/60 border border-gray-100 text-gray-300 hover:text-gray-500 flex items-center justify-center transition"
+              aria-label="後台入口"
+            >
+              ⚙
+            </button>
+            {showAdminPanel && (
+              <div className="mt-2 flex gap-3 text-xs text-gray-400">
+                {hasPage && <Link href="/tenant/dashboard" className="hover:text-gray-600">租戶後台</Link>}
+                {hasBranch && <Link href="/branch/dashboard" className="hover:text-gray-600">分會後台</Link>}
+                {user?.role === 'PLATFORM_ADMIN' && <Link href="/admin" className="hover:text-gray-600">總後台</Link>}
+              </div>
+            )}
+          </div>
+        )}
 
         <button
           onClick={() => {

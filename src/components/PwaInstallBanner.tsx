@@ -7,6 +7,7 @@ export default function PwaInstallBanner() {
   const [canInstall, setCanInstall] = useState(false)
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [installed, setInstalled] = useState(false)
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     const standalone =
@@ -44,29 +45,31 @@ export default function PwaInstallBanner() {
       setInstalled(true)
     }
     setDeferredPrompt(null)
+    setOpen(false)
   }
 
   if (isStandalone || installed) return null
 
   return (
-    <div className="max-w-4xl mx-auto px-4 pt-2">
-      <div className="bg-white border border-primary/20 rounded-xl px-4 py-3 flex items-center justify-between gap-3 shadow-sm">
-        <div className="text-xs text-gray-600">
+    <div className="fixed bottom-24 right-4 z-50">
+      {open && (
+        <div className="absolute bottom-12 right-0 bg-white rounded-xl shadow-lg border border-gray-200 p-3 w-52 text-xs text-gray-600">
           {canInstall ? (
-            <span>📱 將中華促進會安裝到你的主屏幕，使用更快捷。</span>
+            <button onClick={handleInstall} className="w-full bg-primary text-white py-2 rounded-lg text-sm">
+              安裝到主屏幕
+            </button>
           ) : (
-            <span>📱 在瀏覽器選單中選擇「安裝應用程式 / 添加到主屏幕」。</span>
+            <p>在瀏覽器選單中選擇「安裝應用程式 / 添加到主屏幕」。</p>
           )}
         </div>
-        {canInstall && (
-          <button
-            onClick={handleInstall}
-            className="shrink-0 bg-primary text-white text-xs px-3 py-1.5 rounded-lg hover:bg-primary-dark transition"
-          >
-            安裝
-          </button>
-        )}
-      </div>
+      )}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-10 h-10 rounded-full bg-white/80 border border-gray-200 text-gray-400 shadow-sm hover:text-primary flex items-center justify-center"
+        aria-label="安裝提示"
+      >
+        📱
+      </button>
     </div>
   )
 }
