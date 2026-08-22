@@ -54,7 +54,20 @@ export async function POST(req: NextRequest) {
       videoDuration,
       pageId,
       branchId,
+      type,
+      inviteCategory,
+      maxParticipants,
+      deadline,
+      genderLimit,
+      ageMin,
+      ageMax,
+      location,
+      isPinned,
+      visibilityScope,
+      joinScope,
+      regionLimit,
     } = body
+
 
     const text = content ? String(content).trim() : ''
     if (text.length > MAX_TEXT_LENGTH) {
@@ -107,6 +120,18 @@ export async function POST(req: NextRequest) {
         userId: decoded.userId,
         pageId: pageId ? String(pageId) : null,
         branchId: branchId ? String(branchId) : null,
+        type: type ? String(type) : 'DAILY',
+        inviteCategory: inviteCategory ? String(inviteCategory) : null,
+        maxParticipants: maxParticipants ? Number(maxParticipants) : null,
+        deadline: deadline ? new Date(deadline) : null,
+        genderLimit: genderLimit ? String(genderLimit) : '不限',
+        ageMin: ageMin ? Number(ageMin) : null,
+        ageMax: ageMax ? Number(ageMax) : null,
+        location: location ? String(location) : null,
+        isPinned: !!isPinned,
+        visibilityScope: visibilityScope ? String(visibilityScope) : 'PUBLIC',
+        joinScope: joinScope ? String(joinScope) : 'SAME',
+        regionLimit: regionLimit ? String(regionLimit) : null,
       },
     })
 

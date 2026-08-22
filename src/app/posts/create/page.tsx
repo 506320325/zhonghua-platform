@@ -11,6 +11,11 @@ interface StoredUser {
 export default function CreatePostPage() {
   const router = useRouter()
   const [title, setTitle] = useState('')
+  const [type, setType] = useState('DAILY')
+  const [inviteCategory, setInviteCategory] = useState('')
+  const [maxParticipants, setMaxParticipants] = useState('')
+  const [deadline, setDeadline] = useState('')
+  const [location, setLocation] = useState('')
   const [content, setContent] = useState('')
   const [images, setImages] = useState<string[]>([])
   const [videoUrl, setVideoUrl] = useState('')
@@ -86,6 +91,11 @@ export default function CreatePostPage() {
           videoUrl: canPublishVideo ? videoUrl : '',
           videoDuration: canPublishVideo && videoUrl ? Number(videoDuration) : 0,
           category: '動態',
+          type,
+          inviteCategory,
+          maxParticipants,
+          deadline,
+          location,
         }),
       })
       const data = await res.json()

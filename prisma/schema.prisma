@@ -382,6 +382,24 @@ model Post {
   images          String?
   videoUrl        String?
   videoDuration   Int?
+  type              String       @default("DAILY")
+  inviteCategory    String?
+  maxParticipants   Int?
+  currentCount      Int          @default(0)
+  genderLimit       String       @default("不限")
+  ageMin            Int?
+  ageMax            Int?
+  deadline          DateTime?
+  participants      String?
+  location          String?
+  isPinned          Boolean      @default(false)
+  isHidden          Boolean      @default(false)
+  commentCount      Int          @default(0)
+  complaintCount    Int          @default(0)
+  visibilityScope   String       @default("PUBLIC")
+  joinScope         String       @default("SAME")
+  allowedUserIds    String?
+  regionLimit       String?
   status          String       @default("PUBLISHED")
   viewCount       Int          @default(0)
   likeCount       Int          @default(0)
