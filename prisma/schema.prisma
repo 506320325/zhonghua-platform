@@ -106,6 +106,8 @@ model User {
   stampsSent          Stamp[]      @relation("StampFrom")
   stampsReceived      Stamp[]      @relation("StampTo")
   dailyStamps         DailyStamp[]
+  eventPages        EventPage[]
+  eventComments     EventComment[]
   auditLogs            AuditLog[]   @relation("Auditor")
   notifications        Notification[]
   organizationMembers OrganizationMember[]
@@ -400,6 +402,49 @@ model Post {
 // ============================================
 
 // ============================================
+
+// ============================================
+// 7.4 活動主頁（臨時組合）
+// ============================================
+
+model EventPage {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  description     String?  @db.Text
+  coverImage      String?
+  eventDate       DateTime
+  endDate         DateTime?
+  location        String?
+  status          String   @default("DRAFT")
+  organizers      Json
+  coOrganizers    Json
+  supportingOrgs  Json
+  participantOrgs Json
+  guests          Json
+  commentEnabled  Boolean  @default(true)
+  ratingEnabled   Boolean  @default(true)
+  createdBy       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  createdByUser User          @relation(fields: [createdBy], references: [id])
+  comments      EventComment[]
+}
+
+model EventComment {
+  id              String   @id @default(cuid())
+  eventPageId     String
+  userId          String
+  content         String
+  isHidden        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  eventPage EventPage @relation(fields: [eventPageId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id])
+}
+
 // 7.5 信贴
 // ============================================
 
