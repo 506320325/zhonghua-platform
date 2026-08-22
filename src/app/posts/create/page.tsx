@@ -136,6 +136,44 @@ export default function CreatePostPage() {
         </div>
 
         <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">發布類型</label>
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+          >
+            <option value="DAILY">日常</option>
+            <option value="INVITE">邀約</option>
+            <option value="ACTIVITY">活動</option>
+            <option value="BOOKING">預約</option>
+            <option value="HELP">求助</option>
+            <option value="SURVEY">問卷</option>
+          </select>
+        </div>
+
+        {type === 'INVITE' && (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">邀約類別</label>
+              <select value={inviteCategory} onChange={(e) => setInviteCategory(e.target.value)} className="w-full px-4 py-3 border border-gray-300 rounded-xl">
+                <option value="">請選擇</option>
+                <option value="打牌">打牌</option>
+                <option value="行山">行山</option>
+                <option value="羽毛球">羽毛球</option>
+                <option value="吃飯">吃飯</option>
+                <option value="運動">運動</option>
+                <option value="遊戲">遊戲</option>
+                <option value="其他">其他</option>
+              </select>
+            </div>
+            <input value={maxParticipants} onChange={(e) => setMaxParticipants(e.target.value)} placeholder="人數上限" className="w-full px-4 py-3 border border-gray-300 rounded-xl" />
+            <input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} placeholder="截止時間" className="w-full px-4 py-3 border border-gray-300 rounded-xl" />
+            <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="地點" className="w-full px-4 py-3 border border-gray-300 rounded-xl" />
+          </div>
+        )}
+
+
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">內容</label>
           <textarea
             value={content}
