@@ -16,6 +16,12 @@ export default function CreatePostPage() {
   const [maxParticipants, setMaxParticipants] = useState('')
   const [deadline, setDeadline] = useState('')
   const [location, setLocation] = useState('')
+  const [visibilityScope, setVisibilityScope] = useState('PUBLIC')
+  const [joinScope, setJoinScope] = useState('SAME')
+  const [regionLimit, setRegionLimit] = useState('不限')
+  const [ageMin, setAgeMin] = useState('')
+  const [ageMax, setAgeMax] = useState('')
+  const [genderLimit, setGenderLimit] = useState('不限')
   const [content, setContent] = useState('')
   const [images, setImages] = useState<string[]>([])
   const [videoUrl, setVideoUrl] = useState('')
@@ -96,6 +102,12 @@ export default function CreatePostPage() {
           maxParticipants,
           deadline,
           location,
+          visibilityScope,
+          joinScope,
+          regionLimit,
+          ageMin,
+          ageMax,
+          genderLimit,
         }),
       })
       const data = await res.json()
@@ -171,6 +183,51 @@ export default function CreatePostPage() {
             <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="地點" className="w-full px-4 py-3 border border-gray-300 rounded-xl" />
           </div>
         )}
+
+        <div className="space-y-3 bg-gray-50 rounded-xl p-4">
+          <h3 className="text-sm font-semibold text-gray-700">範圍設定</h3>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">誰可以看到</label>
+            <select value={visibilityScope} onChange={(e) => setVisibilityScope(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm">
+              <option value="PUBLIC">公開（所有人）</option>
+              <option value="ORGANIZATION">僅限本組織</option>
+              <option value="TENANT_MEMBERS">僅限本租戶會員</option>
+              <option value="SPECIFIC_MEMBERS">僅限指定會員</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">報名範圍</label>
+            <select value={joinScope} onChange={(e) => setJoinScope(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm">
+              <option value="SAME">與可見範圍相同</option>
+              <option value="PUBLIC">公開</option>
+              <option value="SPECIFIC">指定</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">區域限制</label>
+            <select value={regionLimit} onChange={(e) => setRegionLimit(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm">
+              <option value="不限">不限</option>
+              <option value="火炭">火炭</option>
+              <option value="沙田">沙田</option>
+              <option value="港島">港島</option>
+              <option value="九龍">九龍</option>
+              <option value="新界">新界</option>
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <input value={ageMin} onChange={(e) => setAgeMin(e.target.value)} placeholder="年齡下限" className="px-4 py-2 border border-gray-300 rounded-lg text-sm" />
+            <input value={ageMax} onChange={(e) => setAgeMax(e.target.value)} placeholder="年齡上限" className="px-4 py-2 border border-gray-300 rounded-lg text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">性別限制</label>
+            <select value={genderLimit} onChange={(e) => setGenderLimit(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm">
+              <option value="不限">不限</option>
+              <option value="男">男</option>
+              <option value="女">女</option>
+            </select>
+          </div>
+        </div>
+
 
 
         <div>
