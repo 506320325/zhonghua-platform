@@ -588,6 +588,32 @@ model Message {
   sender        User        @relation(fields: [senderId], references: [id])
 }
 
+
+// ============================================
+// 10. 用戶偏好與標記
+// ============================================
+
+model UserPreference {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  noAd            Boolean  @default(false)
+  noEventNotify   Boolean  @default(false)
+  noAllNotify     Boolean  @default(false)
+  updatedAt       DateTime @updatedAt
+}
+
+model UserTag {
+  id              String   @id @default(cuid())
+  tenantId        String?
+  branchId        String?
+  userId          String
+  tag             String
+  note            String?
+  createdBy       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
 model Rating {
   id              String       @id @default(cuid())
   score           Int          @default(5)
