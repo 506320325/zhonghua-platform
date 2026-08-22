@@ -382,11 +382,43 @@ model ActivitySignup {
 // 6.5 預約
 // ============================================
 
+
+model Service {
+  id              String   @id @default(cuid())
+  name            String
+  category        String
+  description     String?  @db.Text
+  price           Int?
+  duration        Int?
+  tenantId        String
+  confirmType     String   @default("MANUAL")
+  status          String   @default("PUBLISHED")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model UserNoShowRecord {
+  id              String   @id @default(cuid())
+  userId          String
+  bookingId       String
+  noShowAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+}
+
 model Booking {
   id              String   @id @default(cuid())
   tenantId        String?
   branchId        String?
   serviceName     String
+  serviceId         String?
+  endTime           DateTime?
+  name              String?
+  phone             String?
+  remark            String?
+  isWaitlist        Boolean  @default(false)
+  waitlistPosition  Int?
+  rating            Int?
+  comment           String?  @db.Text
   userId          String
   userName        String
   userPhone       String
