@@ -407,6 +407,74 @@ model UserNoShowRecord {
   createdAt       DateTime @default(now())
 }
 
+
+// ============================================
+// 需求
+// ============================================
+
+model Demand {
+  id              String   @id @default(cuid())
+  type            String
+  title           String
+  content         String   @db.Text
+  budgetMin       Int?
+  budgetMax       Int?
+  location        String?
+  images          String?
+  recommendTarget String?
+  status          String   @default("PUBLISHED")
+  userId          String
+  tenantId        String?
+  branchId        String?
+  responses       String?
+  rating          Int?
+  comment         String?  @db.Text
+  surveyId        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ============================================
+// 問卷
+// ============================================
+
+model Survey {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?  @db.Text
+  questions       Json
+  deadline        DateTime?
+  isAnonymous     Boolean  @default(true)
+  status          String   @default("DRAFT")
+  visibilityScope String   @default("PUBLIC")
+  regionLimit     String?
+  ageMin          Int?
+  ageMax          Int?
+  genderLimit     String   @default("不限")
+  userId          String
+  tenantId        String?
+  branchId        String?
+  demandId        String?
+  responseCount   Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model SurveyResponse {
+  id              String   @id @default(cuid())
+  surveyId        String
+  userId          String?
+  answers         Json
+  createdAt       DateTime @default(now())
+}
+
+model SurveyStats {
+  id              String   @id @default(cuid())
+  surveyId        String   @unique
+  questionStats   Json
+  updatedAt       DateTime @updatedAt
+}
+
 model Booking {
   id              String   @id @default(cuid())
   tenantId        String?
