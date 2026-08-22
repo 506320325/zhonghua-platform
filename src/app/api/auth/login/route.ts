@@ -69,6 +69,10 @@ export async function POST(req: NextRequest) {
         nickname: user.nickname,
         role: user.role,
         canPublishVideo: user.canPublishVideo,
+        superAdmin: user.superAdmin,
+        canManagePlatform: user.canManagePlatform,
+        canManageTenant: user.canManageTenant,
+        canManageBranch: user.canManageBranch,
       },
     })
   } catch (error) {
