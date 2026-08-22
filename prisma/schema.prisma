@@ -108,6 +108,7 @@ model User {
   dailyStamps         DailyStamp[]
   eventPages        EventPage[]
   eventComments     EventComment[]
+  announcements     Announcement[]
   auditLogs            AuditLog[]   @relation("Auditor")
   notifications        Notification[]
   organizationMembers OrganizationMember[]
@@ -142,6 +143,7 @@ model Tenant {
   stampsReceived      Stamp[]
   roles               OrganizationRole[]
   organizationMembers  OrganizationMember[]
+  announcements      Announcement[]
 }
 
 model TenantStaff {
@@ -303,6 +305,7 @@ model Branch {
   posts           Post[]
   roles               OrganizationRole[]
   organizationMembers  OrganizationMember[]
+  announcements      Announcement[]
   stampsReceived      Stamp[]
 }
 
@@ -503,6 +506,30 @@ model DailyStamp {
 
 // 8. 评价模块
 // ============================================
+
+
+// ============================================
+// 8. 公告
+// ============================================
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  content   String   @db.Text
+  scope     String   @default("PLATFORM")
+  tenantId  String?
+  branchId  String?
+  startAt   DateTime @default(now())
+  endAt     DateTime?
+  isActive  Boolean  @default(true)
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdByUser User     @relation(fields: [createdBy], references: [id])
+  tenant        Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  branch        Branch?  @relation(fields: [branchId], references: [id], onDelete: Cascade)
+}
 
 model Rating {
   id              String       @id @default(cuid())
